@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function IdleScreen({ config, onStart }) {
+export default function IdleScreen({ config, onStart, goToGallery }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -92,6 +92,32 @@ export default function IdleScreen({ config, onStart }) {
         }}>
           Sacate fotos, aplica efectos y lleva el recuerdo
         </div>
+
+        {/* Gallery link */}
+        {config.enableGallery && (
+          <button
+            onClick={(e) => { e.stopPropagation(); goToGallery(); }}
+            onTouchStart={(e) => e.stopPropagation()}
+            style={{
+              marginTop: '40px',
+              background: 'var(--glass)',
+              border: '1px solid var(--glass-border)',
+              backdropFilter: 'blur(12px)',
+              color: 'rgba(255,255,255,0.8)',
+              padding: '14px 36px',
+              borderRadius: 'var(--radius)',
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.3rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              animation: 'fadeIn 1s ease-out 0.8s both',
+              transition: 'var(--transition)',
+              pointerEvents: 'all',
+            }}
+          >
+            🖼️ Galería de Fotos
+          </button>
+        )}
       </div>
     </div>
   );

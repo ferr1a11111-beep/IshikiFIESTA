@@ -39,23 +39,23 @@ class ThermalPrinterService {
     const date = new Date().toLocaleDateString('es-AR');
     const time = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-    // Build receipt lines (each line will be printed individually with big font)
+    // Build receipt lines - keep short for thermal printers (58mm = ~32 chars, 80mm = ~48 chars)
     const lines = [
-      '================================',
-      '  * * * * * * * * * * * *',
+      '========================',
+      '  * * * * * * * * *',
       '',
       eventName.toUpperCase(),
       '',
-      '  * * * * * * * * * * * *',
-      '================================',
+      '  * * * * * * * * *',
+      '========================',
       '',
       phrase,
       '',
-      '--------------------------------',
+      '------------------------',
       date + ' - ' + time,
       'IshikiFIESTA',
       '~ Momentos que importan ~',
-      '================================',
+      '========================',
       '',
       '',
     ];
@@ -80,39 +80,45 @@ class ThermalPrinterService {
 
   _printText(filePath, printerName) {
     return new Promise((resolve, reject) => {
-      // Use System.Drawing.Printing.PrintDocument for full control over
-      // font size and margins (Out-Printer uses A4 defaults = tiny text + big margins)
       const escapedPath = filePath.replace(/'/g, "''");
       const escapedPrinter = printerName ? printerName.replace(/'/g, "''") : '';
 
-      // PowerShell script using PrintDocument with large font and zero margins
+      // PowerShell script using PrintDocument with small font, word-wrap via RectangleF,
+      // and minimal margins for thermal printers (58mm or 80mm)
       const psScript = `
 Add-Type -AssemblyName System.Drawing
 $lines = [System.IO.File]::ReadAllLines('${escapedPath}', [System.Text.Encoding]::UTF8)
 $lineIndex = 0
 $pd = New-Object System.Drawing.Printing.PrintDocument
 ${escapedPrinter ? `$pd.PrinterSettings.PrinterName = '${escapedPrinter}'` : ''}
-$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(5, 5, 5, 5)
-$font = New-Object System.Drawing.Font('Consolas', 11, [System.Drawing.FontStyle]::Bold)
+$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(2, 2, 5, 5)
+$font = New-Object System.Drawing.Font('Consolas', 8, [System.Drawing.FontStyle]::Bold)
 $brush = [System.Drawing.Brushes]::Black
+$sf = New-Object System.Drawing.StringFormat
+$sf.Trimming = [System.Drawing.StringTrimming]::Word
 $pd.add_PrintPage({
   param($sender, $e)
-  $y = $e.MarginBounds.Top
-  $lineHeight = $font.GetHeight($e.Graphics)
+  $y = [float]$e.MarginBounds.Top
+  $maxW = [float]$e.MarginBounds.Width
+  $maxBottom = [float]$e.MarginBounds.Bottom
   while ($script:lineIndex -lt $lines.Count) {
     $line = $lines[$script:lineIndex]
-    $e.Graphics.DrawString($line, $font, $brush, $e.MarginBounds.Left, $y)
-    $y += $lineHeight
-    $script:lineIndex++
-    if ($y + $lineHeight -gt $e.MarginBounds.Bottom) {
+    if ([string]::IsNullOrEmpty($line)) { $line = ' ' }
+    $rect = New-Object System.Drawing.RectangleF($e.MarginBounds.Left, $y, $maxW, 200)
+    $sz = $e.Graphics.MeasureString($line, $font, [int]$maxW, $sf)
+    if ($y + $sz.Height -gt $maxBottom) {
       $e.HasMorePages = $true
       return
     }
+    $e.Graphics.DrawString($line, $font, $brush, $rect, $sf)
+    $y += $sz.Height
+    $script:lineIndex++
   }
   $e.HasMorePages = $false
 })
 $pd.Print()
 $font.Dispose()
+$sf.Dispose()
 $pd.Dispose()
 `;
 

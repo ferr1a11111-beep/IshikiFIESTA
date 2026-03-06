@@ -43,17 +43,17 @@ export default function PreviewScreen({
 
   const handlePrint = async () => {
     if (!window.api) {
-      setPrintStatus('Impresion no disponible en modo desarrollo');
+      setPrintStatus('No disponible en dev');
       setTimeout(() => setPrintStatus(''), 3000);
       return;
     }
-    setPrintStatus('Enviando a imprimir...');
+    setPrintStatus('Enviando...');
     try {
       const result = await window.api.printPhoto({
         imageData: image,
         printerName: config.photoPrinterName || '',
       });
-      setPrintStatus(result.success ? 'Foto enviada a imprimir!' : `Error: ${result.message}`);
+      setPrintStatus(result.success ? 'Enviada!' : `Error: ${result.message}`);
     } catch (e) {
       setPrintStatus('Error al imprimir');
     }
@@ -62,7 +62,7 @@ export default function PreviewScreen({
 
   const handleThermalPrint = async () => {
     if (!window.api) {
-      setThermalStatus('No disponible en modo desarrollo');
+      setThermalStatus('No disponible en dev');
       setTimeout(() => setThermalStatus(''), 3000);
       return;
     }
@@ -70,25 +70,39 @@ export default function PreviewScreen({
     try {
       const randomPhrase = await window.api.getRandomPhrase();
       setPhrase(randomPhrase.phrase);
-      setThermalStatus('Imprimiendo frase...');
+      setThermalStatus('Imprimiendo...');
 
       const result = await window.api.printPhrase({
         eventName: config.eventName,
         phrase: randomPhrase.phrase,
         printerName: config.thermalPrinterName || '',
       });
-      setThermalStatus(result.success ? 'Frase impresa!' : `Error: ${result.message}`);
+      setThermalStatus(result.success ? 'Impresa!' : `Error: ${result.message}`);
     } catch (e) {
-      setThermalStatus('Error al imprimir frase');
+      setThermalStatus('Error al imprimir');
     }
     setTimeout(() => setThermalStatus(''), 4000);
   };
 
   return (
     <div className="preview-container">
-      {/* Image */}
+      {/* Header */}
+      <div className="preview-header">
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.6rem',
+          fontWeight: 700,
+        }}>
+          <span className="text-gradient">Genial!</span>
+        </h2>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          Tu foto quedo increible
+        </span>
+      </div>
+
+      {/* Image - full width centered */}
       <div className="preview-image-area">
-        <div style={{ animation: 'scaleIn 0.4s ease-out' }}>
+        <div style={{ position: 'relative', animation: 'scaleIn 0.4s ease-out' }}>
           <img src={image} alt="Tu foto" />
           {saving && (
             <div style={{
@@ -108,20 +122,49 @@ export default function PreviewScreen({
         </div>
       </div>
 
-      {/* Actions sidebar */}
-      <div className="preview-actions">
-        <h2 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '1.8rem',
-          fontWeight: 700,
-          marginBottom: '8px',
+      {/* QR code if enabled */}
+      {config.enableQRShare && qrData && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '0 32px 8px',
+          animation: 'slideUp 0.4s ease-out 0.2s both',
         }}>
-          <span className="text-gradient">Genial!</span>
-        </h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>
-          Tu foto quedo increible. Que queres hacer?
-        </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: 'var(--glass)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 16px',
+            border: '1px solid var(--glass-border)',
+          }}>
+            <img src={qrData.qrDataUrl} alt="QR" style={{
+              width: '64px', height: '64px',
+              borderRadius: '6px', background: '#fff', padding: '3px',
+            }} />
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Escanea para descargar
+            </span>
+          </div>
+        </div>
+      )}
 
+      {/* Phrase display */}
+      {phrase && !thermalStatus && (
+        <div style={{
+          textAlign: 'center',
+          padding: '0 32px 8px',
+          fontSize: '0.85rem',
+          color: 'var(--text-muted)',
+          fontStyle: 'italic',
+        }}>
+          "{phrase}"
+        </div>
+      )}
+
+      {/* Bottom actions - horizontal strip */}
+      <div className="preview-actions">
         {/* Print photo */}
         {config.enablePhotoPrint && (
           <button
@@ -129,15 +172,7 @@ export default function PreviewScreen({
             onClick={handlePrint}
             disabled={!!printStatus}
           >
-            <span className="preview-action-icon">🖨️</span>
-            <div>
-              <div>{printStatus || 'Imprimir Foto'}</div>
-              {!printStatus && (
-                <div style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.7 }}>
-                  Impresora a color
-                </div>
-              )}
-            </div>
+            🖨️ {printStatus || 'Imprimir Foto'}
           </button>
         )}
 
@@ -152,52 +187,24 @@ export default function PreviewScreen({
               color: '#fff',
             }}
           >
-            <span className="preview-action-icon">🎫</span>
-            <div>
-              <div>{thermalStatus || 'Frase Divertida'}</div>
-              {phrase && !thermalStatus && (
-                <div style={{ fontSize: '0.7rem', fontWeight: 400, opacity: 0.8, marginTop: '4px' }}>
-                  "{phrase}"
-                </div>
-              )}
-              {!thermalStatus && !phrase && (
-                <div style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.7 }}>
-                  Imprime una frase random
-                </div>
-              )}
-            </div>
+            🎫 {thermalStatus || 'Frase Divertida'}
           </button>
         )}
 
-        {/* QR Share */}
-        {config.enableQRShare && qrData && (
-          <div className="qr-container" style={{ animation: 'slideUp 0.4s ease-out 0.2s both' }}>
-            <img src={qrData.qrDataUrl} alt="QR" className="qr-image" />
-            <div className="qr-label">
-              Escanea para descargar al celular
-            </div>
-          </div>
+        <button className="preview-action-btn touch-btn-primary" onClick={onNewPhoto}>
+          📸 Nueva Foto
+        </button>
+        <button className="preview-action-btn touch-btn-glass" onClick={onRetake}>
+          🔄 Repetir
+        </button>
+        {config.enableGallery && (
+          <button className="preview-action-btn touch-btn-glass" onClick={goToGallery}>
+            🖼️ Galería
+          </button>
         )}
-
-        {/* Bottom actions */}
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <button className="touch-btn touch-btn-primary w-full" onClick={onNewPhoto}>
-            📸 Nueva Foto
-          </button>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="touch-btn touch-btn-glass touch-btn-sm" onClick={onRetake} style={{ flex: 1 }}>
-              🔄 Repetir
-            </button>
-            {config.enableGallery && (
-              <button className="touch-btn touch-btn-glass touch-btn-sm" onClick={goToGallery} style={{ flex: 1 }}>
-                🖼️ Galeria
-              </button>
-            )}
-          </div>
-          <button className="touch-btn touch-btn-ghost touch-btn-sm w-full" onClick={goToIdle}>
-            🏠 Inicio
-          </button>
-        </div>
+        <button className="preview-action-btn touch-btn-ghost" onClick={goToIdle}>
+          🏠 Inicio
+        </button>
       </div>
     </div>
   );

@@ -395,37 +395,129 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   }
 }
 
-// CSS preview style for frame during editing
-function getFramePreviewStyle(frameId) {
+// Draw protruding/overlapping decorative elements (drawn ON TOP of the image)
+function drawFrameOverlays(ctx, frameId, w, h, fw) {
   const frame = FRAMES.find(f => f.id === frameId);
-  if (!frame || frame.type === 'none') return {};
+  if (!frame || frame.type === 'none') return;
+
+  ctx.save();
+
   switch (frame.type) {
-    case 'solid':
-      return { border: `24px solid ${frame.color}` };
-    case 'balloons':
-      return {
-        borderWidth: '24px',
-        borderStyle: 'solid',
-        borderImage: 'linear-gradient(135deg, #b8860b, #ffd700, #daa520) 1',
-      };
-    case 'stars':
-      return { border: `24px solid ${frame.borderColor}` };
-    case 'neon':
-      return {
-        border: `24px solid ${frame.borderColor}`,
-        boxShadow: `inset 0 0 15px ${frame.glowColor}, 0 0 15px ${frame.glowColor}`,
-      };
-    case 'confetti':
-      return { border: `24px solid ${frame.borderColor}` };
-    case 'hearts':
-      return { border: `24px solid ${frame.borderColor}` };
-    case 'filmstrip':
-      return { border: `24px solid ${frame.borderColor}` };
-    case 'lights':
-      return { border: `24px solid ${frame.borderColor}` };
-    default:
-      return {};
+    case 'balloons': {
+      const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
+      const bigR = fw * 1.3;
+      // Top-left cluster protruding into image
+      drawBalloon(ctx, fw * 0.7, fw * 0.4, bigR, bColors[0]);
+      drawBalloon(ctx, fw * 1.7, fw * 0.15, bigR * 0.7, bColors[1]);
+      drawBalloon(ctx, fw * 0.2, fw * 1.3, bigR * 0.55, bColors[2]);
+      // Top-right cluster
+      drawBalloon(ctx, w - fw * 0.7, fw * 0.4, bigR, bColors[3]);
+      drawBalloon(ctx, w - fw * 1.7, fw * 0.15, bigR * 0.7, bColors[4]);
+      drawBalloon(ctx, w - fw * 0.2, fw * 1.3, bigR * 0.55, bColors[5]);
+      // Bottom-left
+      drawBalloon(ctx, fw * 0.8, h - fw * 0.7, bigR * 0.9, bColors[5]);
+      drawBalloon(ctx, fw * 1.6, h - fw * 0.35, bigR * 0.6, bColors[6]);
+      // Bottom-right
+      drawBalloon(ctx, w - fw * 0.8, h - fw * 0.7, bigR * 0.9, bColors[6]);
+      drawBalloon(ctx, w - fw * 1.6, h - fw * 0.35, bigR * 0.6, bColors[0]);
+      break;
+    }
+
+    case 'stars': {
+      const goldA = '#ffd700';
+      const goldB = '#ffed85';
+      const bigR = fw * 0.85;
+      const bigIR = bigR * 0.4;
+      // Large corner stars that protrude into image
+      drawStar5(ctx, fw, fw, bigR, bigIR, goldA);
+      drawStar5(ctx, w - fw, fw, bigR * 0.9, bigIR * 0.9, goldB);
+      drawStar5(ctx, fw, h - fw, bigR * 0.85, bigIR * 0.85, goldB);
+      drawStar5(ctx, w - fw, h - fw, bigR * 0.95, bigIR * 0.95, goldA);
+      // Mid-top and mid-bottom stars
+      drawStar5(ctx, w / 2, fw * 0.35, bigR * 0.65, bigIR * 0.65, goldA);
+      drawStar5(ctx, w / 2, h - fw * 0.35, bigR * 0.65, bigIR * 0.65, goldB);
+      break;
+    }
+
+    case 'neon': {
+      // Glow bleed effect into image corners
+      const glowR = fw * 1.5;
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      const nColors = ['#ff00ff', '#00ffff', '#ff00ff', '#00ffff'];
+      const corners = [[0, 0], [w, 0], [w, h], [0, h]];
+      for (let i = 0; i < corners.length; i++) {
+        const grad = ctx.createRadialGradient(corners[i][0], corners[i][1], 0, corners[i][0], corners[i][1], glowR);
+        grad.addColorStop(0, nColors[i]);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(corners[i][0] - glowR, corners[i][1] - glowR, glowR * 2, glowR * 2);
+      }
+      ctx.restore();
+      break;
+    }
+
+    case 'confetti': {
+      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7', '#ff8800'];
+      // Deterministic confetti near edges, protruding into image
+      for (let i = 0; i < 40; i++) {
+        const seed1 = ((i * 2731 + 17) % 1000) / 1000;
+        const seed2 = ((i * 3571 + 23) % 1000) / 1000;
+        const edge = i % 4;
+        let px, py;
+        if (edge === 0) { px = fw * seed1 * 1.5; py = fw + seed2 * (h - fw * 2); }
+        else if (edge === 1) { px = w - fw * seed1 * 1.5; py = fw + seed2 * (h - fw * 2); }
+        else if (edge === 2) { px = fw + seed1 * (w - fw * 2); py = fw * seed2 * 1.5; }
+        else { px = fw + seed1 * (w - fw * 2); py = h - fw * seed2 * 1.5; }
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate((i * 0.8) % (Math.PI * 2));
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = cColors[i % cColors.length];
+        if (i % 3 === 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, 2 + (i % 4), 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-2, -5, 4 + (i % 3), 9);
+        }
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'hearts': {
+      const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585'];
+      const bigS = fw * 1.1;
+      // Corner hearts that protrude into image
+      drawHeart(ctx, fw, fw, bigS, hColors[0]);
+      drawHeart(ctx, w - fw, fw, bigS * 0.9, hColors[1]);
+      drawHeart(ctx, fw, h - fw, bigS * 0.85, hColors[2]);
+      drawHeart(ctx, w - fw, h - fw, bigS * 0.9, hColors[3]);
+      // Small hearts along mid-edges
+      drawHeart(ctx, w / 2, fw * 0.3, bigS * 0.5, hColors[4]);
+      drawHeart(ctx, w / 2, h - fw * 0.3, bigS * 0.5, hColors[0]);
+      drawHeart(ctx, fw * 0.3, h / 2, bigS * 0.45, hColors[1]);
+      drawHeart(ctx, w - fw * 0.3, h / 2, bigS * 0.45, hColors[2]);
+      break;
+    }
+
+    case 'lights': {
+      const bulbR = fw * 0.32;
+      const lColors = ['#ff4444', '#ffdd00', '#44dd44', '#4488ff', '#ff69b4', '#ff8800'];
+      // Larger glowing bulbs at corners that protrude
+      drawLightBulb(ctx, fw, fw, bulbR * 1.6, lColors[0]);
+      drawLightBulb(ctx, w - fw, fw, bulbR * 1.6, lColors[1]);
+      drawLightBulb(ctx, fw, h - fw, bulbR * 1.6, lColors[2]);
+      drawLightBulb(ctx, w - fw, h - fw, bulbR * 1.6, lColors[3]);
+      break;
+    }
+
+    // filmstrip: no overlays (intentionally rigid/rectangular)
   }
+
+  ctx.restore();
 }
 
 // Thumbnail background for frame selector
@@ -464,6 +556,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
   const [processing, setProcessing] = useState(false);
   const canvasRef = useRef(null);
   const previewRef = useRef(null);
+  const frameCanvasRef = useRef(null);
 
   // Drag state for stickers
   const [dragging, setDragging] = useState(null); // { index, startX, startY }
@@ -491,6 +584,45 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
     };
     apply();
   }, [image, selectedFilter]);
+
+  // Draw frame preview on canvas when frame selection changes
+  useEffect(() => {
+    const canvas = frameCanvasRef.current;
+    if (!canvas) return;
+
+    if (selectedFrame === 'none') {
+      canvas.width = 0;
+      canvas.height = 0;
+      return;
+    }
+
+    // Wait for image to render in DOM
+    const timer = setTimeout(() => {
+      const imgEl = previewRef.current?.querySelector('img');
+      if (!imgEl || !imgEl.clientWidth) return;
+
+      const imgW = imgEl.clientWidth;
+      const imgH = imgEl.clientHeight;
+      const fw = 16; // preview frame width in CSS pixels
+
+      canvas.width = imgW + fw * 2;
+      canvas.height = imgH + fw * 2;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw full frame background + decorations
+      drawFrameOnCanvas(ctx, selectedFrame, canvas.width, canvas.height, fw, config.eventName);
+
+      // Clear center (transparent) so photo shows through
+      ctx.clearRect(fw, fw, imgW, imgH);
+
+      // Draw protruding overlay elements on top
+      drawFrameOverlays(ctx, selectedFrame, canvas.width, canvas.height, fw);
+    }, 120);
+
+    return () => clearTimeout(timer);
+  }, [selectedFrame, filteredImage, config.eventName]);
 
   // Add sticker at center
   const addSticker = (emoji) => {
@@ -590,6 +722,11 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
       // Draw filtered image
       ctx.drawImage(img, frameWidth, frameWidth);
 
+      // Draw protruding frame overlays ON TOP of the image
+      if (selectedFrame !== 'none') {
+        drawFrameOverlays(ctx, selectedFrame, canvas.width, canvas.height, frameWidth);
+      }
+
       // Draw stickers (scale size from preview to actual image resolution)
       const previewImg = previewRef.current?.querySelector('img');
       const scaleRatio = previewImg ? (img.width / previewImg.clientWidth) : 1;
@@ -613,8 +750,6 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
     const finalImage = await composeFinal();
     onDone(finalImage);
   };
-
-  const frameObj = FRAMES.find(f => f.id === selectedFrame);
 
   return (
     <div className="editor-container">
@@ -707,32 +842,18 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
       {/* Photo preview - full width */}
       <div className="editor-preview" ref={previewRef} onClick={() => setSelectedSticker(null)}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Frame overlay */}
-          {selectedFrame !== 'none' && (
-            <div style={{
+          {/* Frame canvas - draws full frame with decorative elements */}
+          <canvas
+            ref={frameCanvasRef}
+            style={{
               position: 'absolute',
-              inset: '-24px',
-              borderRadius: 'calc(var(--radius) + 4px)',
+              left: '-16px',
+              top: '-16px',
               pointerEvents: 'none',
-              zIndex: 1,
-              ...getFramePreviewStyle(selectedFrame),
-            }}>
-              <div style={{
-                position: 'absolute',
-                bottom: '-18px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                fontFamily: 'var(--font-display)',
-                color: frameObj?.textColor || '#fff',
-                whiteSpace: 'nowrap',
-                textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-              }}>
-                {config.eventName}
-              </div>
-            </div>
-          )}
+              zIndex: 2,
+              display: selectedFrame !== 'none' ? 'block' : 'none',
+            }}
+          />
 
           {/* Photo */}
           <img
@@ -742,6 +863,8 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
               borderRadius: 'var(--radius)',
               boxShadow: 'var(--shadow)',
               display: 'block',
+              position: 'relative',
+              zIndex: 1,
             }}
           />
 

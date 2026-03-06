@@ -158,14 +158,17 @@ export default function CameraScreen({ config, mode, onCapture, onBack }) {
         </div>
       )}
 
-      {/* Capture button + Look Here indicator */}
+      {/* Look here indicator - TOP of screen, double size */}
+      {isReady && !isCounting && !capturing && (
+        <div className="camera-look-here">
+          <div className="camera-look-here-arrow">↑</div>
+          <div className="camera-look-here-text">MIRÁ AQUÍ</div>
+        </div>
+      )}
+
+      {/* Capture button at bottom */}
       {isReady && !isCounting && !capturing && (
         <div className="camera-overlay">
-          {/* Look here arrow */}
-          <div className="camera-look-here">
-            <div className="camera-look-here-arrow">↑</div>
-            <div className="camera-look-here-text">MIRÁ AQUÍ</div>
-          </div>
           <button
             className="camera-capture-btn"
             onClick={handleCapture}
