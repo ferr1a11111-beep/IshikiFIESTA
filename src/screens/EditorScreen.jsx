@@ -395,7 +395,7 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   }
 }
 
-// Draw protruding/overlapping decorative elements (drawn ON TOP of the image)
+// Draw protruding/overlapping decorative elements (drawn ON TOP of the image) - 3x GRANDE
 function drawFrameOverlays(ctx, frameId, w, h, fw) {
   const frame = FRAMES.find(f => f.id === frameId);
   if (!frame || frame.type === 'none') return;
@@ -405,45 +405,47 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
   switch (frame.type) {
     case 'balloons': {
       const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
-      const bigR = fw * 1.3;
-      // Top-left cluster protruding into image
-      drawBalloon(ctx, fw * 0.7, fw * 0.4, bigR, bColors[0]);
-      drawBalloon(ctx, fw * 1.7, fw * 0.15, bigR * 0.7, bColors[1]);
-      drawBalloon(ctx, fw * 0.2, fw * 1.3, bigR * 0.55, bColors[2]);
+      const bigR = fw * 3.9;
+      // Top-left cluster - big balloons protruding deep into photo
+      drawBalloon(ctx, fw * 1.2, fw * 0.8, bigR, bColors[0]);
+      drawBalloon(ctx, fw * 3.0, fw * 0.3, bigR * 0.7, bColors[1]);
+      drawBalloon(ctx, fw * 0.4, fw * 2.5, bigR * 0.55, bColors[2]);
       // Top-right cluster
-      drawBalloon(ctx, w - fw * 0.7, fw * 0.4, bigR, bColors[3]);
-      drawBalloon(ctx, w - fw * 1.7, fw * 0.15, bigR * 0.7, bColors[4]);
-      drawBalloon(ctx, w - fw * 0.2, fw * 1.3, bigR * 0.55, bColors[5]);
+      drawBalloon(ctx, w - fw * 1.2, fw * 0.8, bigR, bColors[3]);
+      drawBalloon(ctx, w - fw * 3.0, fw * 0.3, bigR * 0.7, bColors[4]);
+      drawBalloon(ctx, w - fw * 0.4, fw * 2.5, bigR * 0.55, bColors[5]);
       // Bottom-left
-      drawBalloon(ctx, fw * 0.8, h - fw * 0.7, bigR * 0.9, bColors[5]);
-      drawBalloon(ctx, fw * 1.6, h - fw * 0.35, bigR * 0.6, bColors[6]);
+      drawBalloon(ctx, fw * 1.5, h - fw * 1.2, bigR * 0.9, bColors[5]);
+      drawBalloon(ctx, fw * 3.2, h - fw * 0.6, bigR * 0.6, bColors[6]);
       // Bottom-right
-      drawBalloon(ctx, w - fw * 0.8, h - fw * 0.7, bigR * 0.9, bColors[6]);
-      drawBalloon(ctx, w - fw * 1.6, h - fw * 0.35, bigR * 0.6, bColors[0]);
+      drawBalloon(ctx, w - fw * 1.5, h - fw * 1.2, bigR * 0.9, bColors[6]);
+      drawBalloon(ctx, w - fw * 3.2, h - fw * 0.6, bigR * 0.6, bColors[0]);
       break;
     }
 
     case 'stars': {
       const goldA = '#ffd700';
       const goldB = '#ffed85';
-      const bigR = fw * 0.85;
+      const bigR = fw * 2.55;
       const bigIR = bigR * 0.4;
-      // Large corner stars that protrude into image
-      drawStar5(ctx, fw, fw, bigR, bigIR, goldA);
-      drawStar5(ctx, w - fw, fw, bigR * 0.9, bigIR * 0.9, goldB);
-      drawStar5(ctx, fw, h - fw, bigR * 0.85, bigIR * 0.85, goldB);
-      drawStar5(ctx, w - fw, h - fw, bigR * 0.95, bigIR * 0.95, goldA);
-      // Mid-top and mid-bottom stars
-      drawStar5(ctx, w / 2, fw * 0.35, bigR * 0.65, bigIR * 0.65, goldA);
-      drawStar5(ctx, w / 2, h - fw * 0.35, bigR * 0.65, bigIR * 0.65, goldB);
+      // Large corner stars protruding deep into photo
+      drawStar5(ctx, fw * 1.2, fw * 1.2, bigR, bigIR, goldA);
+      drawStar5(ctx, w - fw * 1.2, fw * 1.2, bigR * 0.9, bigIR * 0.9, goldB);
+      drawStar5(ctx, fw * 1.2, h - fw * 1.2, bigR * 0.85, bigIR * 0.85, goldB);
+      drawStar5(ctx, w - fw * 1.2, h - fw * 1.2, bigR * 0.95, bigIR * 0.95, goldA);
+      // Mid-edge stars
+      drawStar5(ctx, w / 2, fw * 0.5, bigR * 0.65, bigIR * 0.65, goldA);
+      drawStar5(ctx, w / 2, h - fw * 0.5, bigR * 0.65, bigIR * 0.65, goldB);
+      drawStar5(ctx, fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldA);
+      drawStar5(ctx, w - fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldB);
       break;
     }
 
     case 'neon': {
-      // Glow bleed effect into image corners
-      const glowR = fw * 1.5;
+      // Big glow bleed effect into image corners
+      const glowR = fw * 4.5;
       ctx.save();
-      ctx.globalAlpha = 0.25;
+      ctx.globalAlpha = 0.3;
       const nColors = ['#ff00ff', '#00ffff', '#ff00ff', '#00ffff'];
       const corners = [[0, 0], [w, 0], [w, h], [0, h]];
       for (let i = 0; i < corners.length; i++) {
@@ -459,28 +461,28 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
 
     case 'confetti': {
       const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7', '#ff8800'];
-      // Deterministic confetti near edges, protruding into image
-      for (let i = 0; i < 40; i++) {
+      // Big confetti pieces near edges, protruding deep into photo
+      for (let i = 0; i < 80; i++) {
         const seed1 = ((i * 2731 + 17) % 1000) / 1000;
         const seed2 = ((i * 3571 + 23) % 1000) / 1000;
         const edge = i % 4;
         let px, py;
-        if (edge === 0) { px = fw * seed1 * 1.5; py = fw + seed2 * (h - fw * 2); }
-        else if (edge === 1) { px = w - fw * seed1 * 1.5; py = fw + seed2 * (h - fw * 2); }
-        else if (edge === 2) { px = fw + seed1 * (w - fw * 2); py = fw * seed2 * 1.5; }
-        else { px = fw + seed1 * (w - fw * 2); py = h - fw * seed2 * 1.5; }
+        if (edge === 0) { px = fw * seed1 * 4; py = fw + seed2 * (h - fw * 2); }
+        else if (edge === 1) { px = w - fw * seed1 * 4; py = fw + seed2 * (h - fw * 2); }
+        else if (edge === 2) { px = fw + seed1 * (w - fw * 2); py = fw * seed2 * 4; }
+        else { px = fw + seed1 * (w - fw * 2); py = h - fw * seed2 * 4; }
 
         ctx.save();
         ctx.translate(px, py);
         ctx.rotate((i * 0.8) % (Math.PI * 2));
-        ctx.globalAlpha = 0.75;
+        ctx.globalAlpha = 0.8;
         ctx.fillStyle = cColors[i % cColors.length];
         if (i % 3 === 0) {
           ctx.beginPath();
-          ctx.arc(0, 0, 2 + (i % 4), 0, Math.PI * 2);
+          ctx.arc(0, 0, 6 + (i % 10), 0, Math.PI * 2);
           ctx.fill();
         } else {
-          ctx.fillRect(-2, -5, 4 + (i % 3), 9);
+          ctx.fillRect(-6, -14, 12 + (i % 8), 27);
         }
         ctx.restore();
       }
@@ -489,28 +491,33 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
 
     case 'hearts': {
       const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585'];
-      const bigS = fw * 1.1;
-      // Corner hearts that protrude into image
-      drawHeart(ctx, fw, fw, bigS, hColors[0]);
-      drawHeart(ctx, w - fw, fw, bigS * 0.9, hColors[1]);
-      drawHeart(ctx, fw, h - fw, bigS * 0.85, hColors[2]);
-      drawHeart(ctx, w - fw, h - fw, bigS * 0.9, hColors[3]);
-      // Small hearts along mid-edges
-      drawHeart(ctx, w / 2, fw * 0.3, bigS * 0.5, hColors[4]);
-      drawHeart(ctx, w / 2, h - fw * 0.3, bigS * 0.5, hColors[0]);
-      drawHeart(ctx, fw * 0.3, h / 2, bigS * 0.45, hColors[1]);
-      drawHeart(ctx, w - fw * 0.3, h / 2, bigS * 0.45, hColors[2]);
+      const bigS = fw * 3.3;
+      // Big corner hearts protruding deep into photo
+      drawHeart(ctx, fw * 1.2, fw * 1.2, bigS, hColors[0]);
+      drawHeart(ctx, w - fw * 1.2, fw * 1.2, bigS * 0.9, hColors[1]);
+      drawHeart(ctx, fw * 1.2, h - fw * 1.2, bigS * 0.85, hColors[2]);
+      drawHeart(ctx, w - fw * 1.2, h - fw * 1.2, bigS * 0.9, hColors[3]);
+      // Mid-edge hearts
+      drawHeart(ctx, w / 2, fw * 0.5, bigS * 0.5, hColors[4]);
+      drawHeart(ctx, w / 2, h - fw * 0.5, bigS * 0.5, hColors[0]);
+      drawHeart(ctx, fw * 0.5, h / 2, bigS * 0.45, hColors[1]);
+      drawHeart(ctx, w - fw * 0.5, h / 2, bigS * 0.45, hColors[2]);
       break;
     }
 
     case 'lights': {
-      const bulbR = fw * 0.32;
+      const bulbR = fw * 0.96;
       const lColors = ['#ff4444', '#ffdd00', '#44dd44', '#4488ff', '#ff69b4', '#ff8800'];
-      // Larger glowing bulbs at corners that protrude
-      drawLightBulb(ctx, fw, fw, bulbR * 1.6, lColors[0]);
-      drawLightBulb(ctx, w - fw, fw, bulbR * 1.6, lColors[1]);
-      drawLightBulb(ctx, fw, h - fw, bulbR * 1.6, lColors[2]);
-      drawLightBulb(ctx, w - fw, h - fw, bulbR * 1.6, lColors[3]);
+      // Big glowing bulbs at corners protruding into photo
+      drawLightBulb(ctx, fw * 1.0, fw * 1.0, bulbR * 1.6, lColors[0]);
+      drawLightBulb(ctx, w - fw * 1.0, fw * 1.0, bulbR * 1.6, lColors[1]);
+      drawLightBulb(ctx, fw * 1.0, h - fw * 1.0, bulbR * 1.6, lColors[2]);
+      drawLightBulb(ctx, w - fw * 1.0, h - fw * 1.0, bulbR * 1.6, lColors[3]);
+      // Extra mid-edge bulbs
+      drawLightBulb(ctx, w / 2, fw * 0.3, bulbR * 1.2, lColors[4]);
+      drawLightBulb(ctx, w / 2, h - fw * 0.3, bulbR * 1.2, lColors[5]);
+      drawLightBulb(ctx, fw * 0.3, h / 2, bulbR * 1.2, lColors[0]);
+      drawLightBulb(ctx, w - fw * 0.3, h / 2, bulbR * 1.2, lColors[1]);
       break;
     }
 

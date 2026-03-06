@@ -170,6 +170,37 @@ function setupIPC() {
   ipcMain.handle('app:getGalleryPath', () => GALLERY_DIR);
 }
 
+// Create desktop shortcut to gallery folder
+function createGalleryShortcut() {
+  try {
+    const os = require('os');
+    const { exec } = require('child_process');
+    const desktopPath = path.join(os.homedir(), 'Desktop');
+    const shortcutPath = path.join(desktopPath, 'IshikiFIESTA - Fotos.lnk');
+
+    if (fs.existsSync(shortcutPath)) return;
+
+    const esc = (s) => s.replace(/'/g, "''");
+    const psScript = `$ws = New-Object -ComObject WScript.Shell
+$s = $ws.CreateShortcut('${esc(shortcutPath)}')
+$s.TargetPath = '${esc(GALLERY_DIR)}'
+$s.IconLocation = 'imageres.dll,3'
+$s.Description = 'Carpeta de fotos IshikiFIESTA'
+$s.Save()`;
+
+    const tmpFile = path.join(os.tmpdir(), `ishiki_shortcut_${Date.now()}.ps1`);
+    fs.writeFileSync(tmpFile, psScript, 'utf-8');
+
+    exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, { timeout: 10000 }, (error) => {
+      setTimeout(() => { try { fs.unlinkSync(tmpFile); } catch (e) {} }, 3000);
+      if (error) console.error('Error creating gallery shortcut:', error.message);
+      else console.log('Gallery desktop shortcut created:', shortcutPath);
+    });
+  } catch (e) {
+    console.error('Error in createGalleryShortcut:', e);
+  }
+}
+
 app.whenReady().then(() => {
   // Initialize services
   storageService = new StorageService(GALLERY_DIR);
@@ -182,6 +213,9 @@ app.whenReady().then(() => {
 
   setupIPC();
   createWindow();
+
+  // Create desktop shortcut to photos gallery
+  createGalleryShortcut();
 });
 
 app.on('window-all-closed', () => {
