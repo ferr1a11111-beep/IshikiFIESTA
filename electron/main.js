@@ -15,8 +15,16 @@ let storageService;
 let shareServer;
 
 const isDev = !app.isPackaged;
-// In production, portable exe extracts to a temp dir. We use the exe's directory for user data.
-const EXE_DIR = isDev ? path.join(__dirname, '..') : path.dirname(app.getPath('exe'));
+// In production, the portable exe extracts to a temp dir.
+// PORTABLE_EXECUTABLE_DIR points to where the original .exe lives (set by electron-builder).
+// We use that for persistent user data (gallery, config), NOT the temp extraction dir.
+const EXE_DIR = isDev
+  ? path.join(__dirname, '..')
+  : (process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(app.getPath('exe')));
+
+console.log('[IshikiFIESTA] isDev:', isDev);
+console.log('[IshikiFIESTA] EXE_DIR:', EXE_DIR);
+console.log('[IshikiFIESTA] PORTABLE_EXECUTABLE_DIR:', process.env.PORTABLE_EXECUTABLE_DIR || 'not set');
 const GALLERY_DIR = path.join(EXE_DIR, 'IshikiFIESTA_Data', 'gallery');
 const CONFIG_DIR = path.join(EXE_DIR, 'IshikiFIESTA_Data', 'config');
 const ASSETS_DIR = isDev
