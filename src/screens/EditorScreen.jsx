@@ -29,140 +29,368 @@ const STICKERS = [
 ];
 
 const FRAMES = [
-  { id: 'none', name: 'Sin marco', type: 'none' },
-  { id: 'classic_white', name: 'Clasico Blanco', type: 'solid', color: '#ffffff', textColor: '#333' },
-  { id: 'elegant_black', name: 'Negro Elegante', type: 'solid', color: '#1a1a1a', textColor: '#fff' },
-  { id: 'gold_luxe', name: 'Oro Lujoso', type: 'gradient',
-    colors: ['#b8860b', '#ffd700', '#daa520', '#ffd700', '#b8860b'], textColor: '#1a1a1a' },
-  { id: 'rose_gold', name: 'Oro Rosa', type: 'gradient',
-    colors: ['#b76e79', '#f0c0c0', '#e8a0a0', '#f0c0c0', '#b76e79'], textColor: '#fff' },
-  { id: 'neon_party', name: 'Neon Fiesta', type: 'neon',
-    color: '#ff00ff', glowColor: 'rgba(255,0,255,0.6)', textColor: '#fff' },
-  { id: 'rainbow', name: 'Arcoiris', type: 'rainbow', textColor: '#fff' },
-  { id: 'glitter_pink', name: 'Glitter Rosa', type: 'glitter',
-    baseColor: '#ff69b4', sparkleColor: '#fff', textColor: '#fff' },
-  { id: 'fiesta_confetti', name: 'Confetti', type: 'confetti',
-    baseColor: '#2c003e', textColor: '#ffd700' },
-  { id: 'vintage_film', name: 'Pelicula Retro', type: 'filmstrip',
-    color: '#1a1a1a', textColor: '#fff' },
+  { id: 'none', name: 'Sin marco', type: 'none', thumb: '✕' },
+  { id: 'classic_white', name: 'Clásico', type: 'solid', color: '#ffffff', textColor: '#555', thumb: '⬜' },
+  { id: 'elegant_black', name: 'Elegante', type: 'solid', color: '#1a1a1a', textColor: '#d4af37', thumb: '⬛' },
+  { id: 'fiesta_globos', name: 'Globos', type: 'balloons', borderColor: '#daa520', textColor: '#1a1a1a', thumb: '🎈' },
+  { id: 'estrellas_glam', name: 'Estrellas', type: 'stars', borderColor: '#1a1a2e', textColor: '#ffd700', thumb: '⭐' },
+  { id: 'neon_party', name: 'Neon', type: 'neon', borderColor: '#0a0a1a', neonColor: '#ff00ff', glowColor: 'rgba(255,0,255,0.6)', textColor: '#fff', thumb: '💜' },
+  { id: 'confetti', name: 'Confetti', type: 'confetti', borderColor: '#2c003e', textColor: '#ffd700', thumb: '🎊' },
+  { id: 'corazones', name: 'Corazones', type: 'hearts', borderColor: '#ffe0ec', textColor: '#c71585', thumb: '❤️' },
+  { id: 'vintage_film', name: 'Película', type: 'filmstrip', borderColor: '#1a1a1a', textColor: '#fff', thumb: '🎬' },
+  { id: 'luces_fiesta', name: 'Luces', type: 'lights', borderColor: '#1a1a2e', textColor: '#ffdd44', thumb: '💡' },
 ];
 
-// Draw glamorous frame on canvas for final composition
+// --- Decorative frame helper drawing functions ---
+
+function drawBalloon(ctx, x, y, r, color) {
+  ctx.save();
+  // Balloon body (ellipse)
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x, y, r * 0.75, r, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Shine highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(x - r * 0.2, y - r * 0.3, r * 0.15, r * 0.25, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  // Knot triangle
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.12, y + r);
+  ctx.lineTo(x + r * 0.12, y + r);
+  ctx.lineTo(x, y + r * 1.18);
+  ctx.closePath();
+  ctx.fill();
+  // String
+  ctx.strokeStyle = 'rgba(200,200,200,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y + r * 1.18);
+  ctx.quadraticCurveTo(x + r * 0.3, y + r * 1.6, x - r * 0.1, y + r * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawStar5(ctx, cx, cy, outerR, innerR, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.shadowColor = 'rgba(255,215,0,0.4)';
+  ctx.shadowBlur = outerR * 0.4;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const aOuter = (i * 72 - 90) * Math.PI / 180;
+    const aInner = ((i * 72) + 36 - 90) * Math.PI / 180;
+    ctx.lineTo(cx + outerR * Math.cos(aOuter), cy + outerR * Math.sin(aOuter));
+    ctx.lineTo(cx + innerR * Math.cos(aInner), cy + innerR * Math.sin(aInner));
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawHeart(ctx, cx, cy, size, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  const s = size / 2;
+  ctx.beginPath();
+  // Two arcs for the top lobes + line to bottom point
+  ctx.arc(cx - s / 2, cy - s * 0.1, s / 2, Math.PI, 0, false);
+  ctx.arc(cx + s / 2, cy - s * 0.1, s / 2, Math.PI, 0, false);
+  ctx.lineTo(cx, cy + s * 0.9);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawLightBulb(ctx, x, y, r, color) {
+  ctx.save();
+  // Glow
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = r * 2.5;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  // Inner bright spot
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.15, y - r * 0.15, r * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Draw decorative frame on canvas for final composition
 function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   const frame = FRAMES.find(f => f.id === frameId);
   if (!frame || frame.type === 'none') return;
 
+  ctx.save();
+
   switch (frame.type) {
-    case 'solid':
+    case 'solid': {
       ctx.fillStyle = frame.color;
       ctx.fillRect(0, 0, w, h);
       break;
+    }
 
-    case 'gradient': {
+    case 'balloons': {
+      // Golden gradient border
       const grad = ctx.createLinearGradient(0, 0, w, h);
-      frame.colors.forEach((c, i) => grad.addColorStop(i / (frame.colors.length - 1), c));
+      grad.addColorStop(0, '#b8860b');
+      grad.addColorStop(0.5, '#ffd700');
+      grad.addColorStop(1, '#daa520');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
-      // Shimmer diagonal lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < w + h; i += 8) {
+      // Balloons in corners and along edges
+      const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
+      const bR = fw * 0.42;
+      // Top-left cluster
+      drawBalloon(ctx, fw * 0.45, fw * 0.3, bR, bColors[0]);
+      drawBalloon(ctx, fw * 1.15, fw * 0.18, bR * 0.78, bColors[1]);
+      // Top-right cluster
+      drawBalloon(ctx, w - fw * 0.45, fw * 0.3, bR, bColors[2]);
+      drawBalloon(ctx, w - fw * 1.15, fw * 0.18, bR * 0.78, bColors[3]);
+      // Bottom-left cluster
+      drawBalloon(ctx, fw * 0.5, h - fw * 0.55, bR * 0.85, bColors[4]);
+      drawBalloon(ctx, fw * 1.25, h - fw * 0.45, bR * 0.65, bColors[5]);
+      // Bottom-right cluster
+      drawBalloon(ctx, w - fw * 0.5, h - fw * 0.55, bR * 0.85, bColors[6]);
+      drawBalloon(ctx, w - fw * 1.25, h - fw * 0.45, bR * 0.65, bColors[0]);
+      // Along top edge
+      for (let i = 0; i < 5; i++) {
+        const bx = fw * 2 + (w - fw * 4) * (i / 4);
+        drawBalloon(ctx, bx, fw * 0.28, bR * 0.6, bColors[(i + 2) % bColors.length]);
+      }
+      // Along bottom edge
+      for (let i = 0; i < 4; i++) {
+        const bx = fw * 2.5 + (w - fw * 5) * (i / 3);
+        drawBalloon(ctx, bx, h - fw * 0.5, bR * 0.55, bColors[(i + 4) % bColors.length]);
+      }
+      break;
+    }
+
+    case 'stars': {
+      // Dark blue border
+      ctx.fillStyle = frame.borderColor;
+      ctx.fillRect(0, 0, w, h);
+      // Subtle shimmer
+      ctx.fillStyle = 'rgba(255,215,0,0.03)';
+      ctx.fillRect(0, 0, w, h);
+      // Golden stars along all edges
+      const sOuter = fw * 0.32;
+      const sInner = sOuter * 0.4;
+      const goldA = '#ffd700';
+      const goldB = '#ffed85';
+      // Top
+      for (let i = 0; i < 9; i++) {
+        const sx = fw * 0.4 + (w - fw * 0.8) * (i / 8);
+        drawStar5(ctx, sx, fw * 0.42, sOuter * (0.7 + (i % 3) * 0.15), sInner * (0.7 + (i % 3) * 0.15), i % 2 === 0 ? goldA : goldB);
+      }
+      // Bottom
+      for (let i = 0; i < 9; i++) {
+        const sx = fw * 0.4 + (w - fw * 0.8) * (i / 8);
+        drawStar5(ctx, sx, h - fw * 0.42, sOuter * (0.8 + (i % 2) * 0.2), sInner * (0.8 + (i % 2) * 0.2), i % 2 === 0 ? goldB : goldA);
+      }
+      // Left
+      for (let i = 1; i < 6; i++) {
+        const sy = fw + (h - fw * 2) * (i / 6);
+        drawStar5(ctx, fw * 0.42, sy, sOuter * (0.6 + (i % 3) * 0.2), sInner * (0.6 + (i % 3) * 0.2), goldA);
+      }
+      // Right
+      for (let i = 1; i < 6; i++) {
+        const sy = fw + (h - fw * 2) * (i / 6);
+        drawStar5(ctx, w - fw * 0.42, sy, sOuter * (0.7 + (i % 2) * 0.15), sInner * (0.7 + (i % 2) * 0.15), goldB);
+      }
+      // Tiny sparkle dots scattered
+      ctx.fillStyle = 'rgba(255,215,0,0.5)';
+      for (let i = 0; i < 60; i++) {
+        const px = ((i * 7919 + 31) % w);
+        const py = ((i * 104729 + 31) % h);
+        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(0, i);
-        ctx.stroke();
+        ctx.arc(px, py, 1 + (i % 2), 0, Math.PI * 2);
+        ctx.fill();
       }
       break;
     }
 
     case 'neon': {
-      ctx.fillStyle = '#0a0a1a';
+      ctx.fillStyle = frame.borderColor;
       ctx.fillRect(0, 0, w, h);
-      ctx.save();
-      ctx.shadowColor = frame.glowColor;
-      ctx.shadowBlur = 20;
-      ctx.strokeStyle = frame.color;
-      ctx.lineWidth = 4;
-      ctx.strokeRect(fw * 0.3, fw * 0.3, w - fw * 0.6, h - fw * 0.6);
-      ctx.shadowBlur = 10;
-      ctx.strokeRect(fw * 0.3, fw * 0.3, w - fw * 0.6, h - fw * 0.6);
-      ctx.restore();
-      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(fw - 2, fw - 2, w - fw * 2 + 4, h - fw * 2 + 4);
-      break;
-    }
-
-    case 'rainbow': {
-      const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
-      const grad = ctx.createLinearGradient(0, 0, w, 0);
-      colors.forEach((c, i) => grad.addColorStop(i / (colors.length - 1), c));
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-      break;
-    }
-
-    case 'glitter': {
-      ctx.fillStyle = frame.baseColor;
-      ctx.fillRect(0, 0, w, h);
-      for (let i = 0; i < 400; i++) {
-        const px = ((42 * (i + 1) * 7919) % w);
-        const py = ((42 * (i + 1) * 104729) % h);
-        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
-        const size = 1 + (i % 3);
-        ctx.fillStyle = `rgba(255,255,255,${0.3 + (i % 5) * 0.14})`;
-        ctx.beginPath();
-        ctx.arc(px, py, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      break;
-    }
-
-    case 'confetti': {
-      ctx.fillStyle = frame.baseColor;
-      ctx.fillRect(0, 0, w, h);
-      const confettiColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7'];
-      for (let i = 0; i < 100; i++) {
-        const px = ((i * 7919 + 31) % w);
-        const py = ((i * 104729 + 31) % h);
-        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
+      // Multiple neon lines with glow effect
+      const neonPairs = [
+        { color: '#ff00ff', blur: 18 },
+        { color: '#00ffff', blur: 14 },
+        { color: '#ff00ff', blur: 8 },
+      ];
+      for (let line = 0; line < neonPairs.length; line++) {
         ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate((i * 0.5) % (Math.PI * 2));
-        ctx.fillStyle = confettiColors[i % confettiColors.length];
-        ctx.fillRect(-4, -8, 8, 16);
+        ctx.strokeStyle = neonPairs[line].color;
+        ctx.shadowColor = neonPairs[line].color;
+        ctx.shadowBlur = neonPairs[line].blur;
+        ctx.lineWidth = 3 - line;
+        const offset = fw * (0.2 + line * 0.15);
+        ctx.strokeRect(offset, offset, w - offset * 2, h - offset * 2);
+        ctx.restore();
+      }
+      // Corner accent circles
+      const cornerR = fw * 0.5;
+      const corners = [[0, 0], [w, 0], [w, h], [0, h]];
+      for (const [cx, cy] of corners) {
+        ctx.save();
+        ctx.strokeStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, cornerR, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.restore();
       }
       break;
     }
 
-    case 'filmstrip': {
-      ctx.fillStyle = frame.color;
+    case 'confetti': {
+      ctx.fillStyle = frame.borderColor;
       ctx.fillRect(0, 0, w, h);
-      const holeSize = fw * 0.35;
-      const spacing = holeSize * 2.5;
+      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7', '#ff8800', '#ffffff'];
+      for (let i = 0; i < 200; i++) {
+        const px = ((i * 7919 + 31) % w);
+        const py = ((i * 104729 + 31) % h);
+        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate((i * 0.7) % (Math.PI * 2));
+        ctx.fillStyle = cColors[i % cColors.length];
+        if (i % 3 === 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, 2.5 + (i % 4), 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-3, -6, 5 + (i % 3), 11);
+        }
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'hearts': {
+      ctx.fillStyle = frame.borderColor;
+      ctx.fillRect(0, 0, w, h);
+      const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585', '#d81b60'];
+      const hSize = fw * 0.38;
+      // Top
+      for (let i = 0; i < 10; i++) {
+        const hx = fw * 0.4 + (w - fw * 0.8) * (i / 9);
+        drawHeart(ctx, hx, fw * 0.3, hSize * (0.6 + (i % 3) * 0.2), hColors[i % hColors.length]);
+      }
+      // Bottom
+      for (let i = 0; i < 10; i++) {
+        const hx = fw * 0.4 + (w - fw * 0.8) * (i / 9);
+        drawHeart(ctx, hx, h - fw * 0.5, hSize * (0.7 + (i % 3) * 0.15), hColors[(i + 3) % hColors.length]);
+      }
+      // Left
+      for (let i = 1; i < 7; i++) {
+        const hy = fw + (h - fw * 2) * (i / 7);
+        drawHeart(ctx, fw * 0.38, hy, hSize * (0.5 + (i % 3) * 0.2), hColors[(i + 1) % hColors.length]);
+      }
+      // Right
+      for (let i = 1; i < 7; i++) {
+        const hy = fw + (h - fw * 2) * (i / 7);
+        drawHeart(ctx, w - fw * 0.38, hy, hSize * (0.6 + (i % 2) * 0.2), hColors[(i + 2) % hColors.length]);
+      }
+      break;
+    }
+
+    case 'filmstrip': {
+      ctx.fillStyle = frame.borderColor;
+      ctx.fillRect(0, 0, w, h);
+      // Film perforations along top and bottom
+      const holeW = fw * 0.38;
+      const holeH = fw * 0.5;
+      const spacing = holeW * 2.2;
       ctx.fillStyle = '#333';
-      for (let x = spacing; x < w - spacing; x += spacing) {
+      for (let x = spacing; x < w - spacing / 2; x += spacing) {
+        const rx = x - holeW / 2;
+        // Top holes
         ctx.beginPath();
-        ctx.rect(x - holeSize / 2, fw * 0.15, holeSize, holeSize);
+        ctx.rect(rx, fw * 0.18, holeW, holeH);
         ctx.fill();
+        // Bottom holes
         ctx.beginPath();
-        ctx.rect(x - holeSize / 2, h - fw * 0.15 - holeSize, holeSize, holeSize);
+        ctx.rect(rx, h - fw * 0.18 - holeH, holeW, holeH);
         ctx.fill();
+      }
+      // Thin edge line
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(fw * 0.92, fw * 0.92, w - fw * 1.84, h - fw * 1.84);
+      break;
+    }
+
+    case 'lights': {
+      ctx.fillStyle = frame.borderColor;
+      ctx.fillRect(0, 0, w, h);
+      const lColors = ['#ff4444', '#ffdd00', '#44dd44', '#4488ff', '#ff69b4', '#ff8800', '#aa44ff', '#00dddd'];
+      const bulbR = fw * 0.17;
+      // Wire along all edges
+      ctx.strokeStyle = 'rgba(120,120,120,0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, fw * 0.45);
+      ctx.lineTo(w, fw * 0.45);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, h - fw * 0.45);
+      ctx.lineTo(w, h - fw * 0.45);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(fw * 0.45, 0);
+      ctx.lineTo(fw * 0.45, h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(w - fw * 0.45, 0);
+      ctx.lineTo(w - fw * 0.45, h);
+      ctx.stroke();
+      // Bulbs along top
+      let ci = 0;
+      for (let i = 0; i < 14; i++) {
+        const bx = fw * 0.2 + (w - fw * 0.4) * (i / 13);
+        drawLightBulb(ctx, bx, fw * 0.45, bulbR, lColors[ci++ % lColors.length]);
+      }
+      // Bottom
+      for (let i = 0; i < 14; i++) {
+        const bx = fw * 0.2 + (w - fw * 0.4) * (i / 13);
+        drawLightBulb(ctx, bx, h - fw * 0.45, bulbR, lColors[ci++ % lColors.length]);
+      }
+      // Left
+      for (let i = 1; i < 9; i++) {
+        const by = fw + (h - fw * 2) * (i / 9);
+        drawLightBulb(ctx, fw * 0.45, by, bulbR, lColors[ci++ % lColors.length]);
+      }
+      // Right
+      for (let i = 1; i < 9; i++) {
+        const by = fw + (h - fw * 2) * (i / 9);
+        drawLightBulb(ctx, w - fw * 0.45, by, bulbR, lColors[ci++ % lColors.length]);
       }
       break;
     }
   }
 
-  // Event name at bottom
-  if (fw > 20) {
+  ctx.restore();
+
+  // Event name at bottom of frame
+  if (fw > 20 && eventName) {
     ctx.save();
     ctx.fillStyle = frame.textColor || '#fff';
-    ctx.font = `bold ${Math.round(fw * 0.55)}px "Fredoka", sans-serif`;
+    ctx.font = `bold ${Math.round(fw * 0.5)}px "Fredoka", sans-serif`;
     ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
     ctx.shadowBlur = 4;
-    ctx.fillText(eventName, w / 2, h - fw * 0.3);
+    ctx.fillText(eventName, w / 2, h - fw * 0.25);
     ctx.restore();
   }
 }
@@ -170,38 +398,31 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
 // CSS preview style for frame during editing
 function getFramePreviewStyle(frameId) {
   const frame = FRAMES.find(f => f.id === frameId);
-  if (!frame) return {};
+  if (!frame || frame.type === 'none') return {};
   switch (frame.type) {
     case 'solid':
       return { border: `24px solid ${frame.color}` };
-    case 'gradient':
+    case 'balloons':
       return {
-        border: '24px solid transparent',
-        backgroundImage: `linear-gradient(135deg, ${frame.colors.join(', ')})`,
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'border-box',
+        borderWidth: '24px',
+        borderStyle: 'solid',
+        borderImage: 'linear-gradient(135deg, #b8860b, #ffd700, #daa520) 1',
       };
+    case 'stars':
+      return { border: `24px solid ${frame.borderColor}` };
     case 'neon':
       return {
-        border: '24px solid #0a0a1a',
+        border: `24px solid ${frame.borderColor}`,
         boxShadow: `inset 0 0 15px ${frame.glowColor}, 0 0 15px ${frame.glowColor}`,
       };
-    case 'rainbow':
-      return {
-        border: '24px solid transparent',
-        backgroundImage: 'linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'border-box',
-      };
-    case 'glitter':
-      return {
-        border: `24px solid ${frame.baseColor}`,
-        boxShadow: 'inset 0 0 20px rgba(255,255,255,0.2)',
-      };
     case 'confetti':
-      return { border: `24px solid ${frame.baseColor}` };
+      return { border: `24px solid ${frame.borderColor}` };
+    case 'hearts':
+      return { border: `24px solid ${frame.borderColor}` };
     case 'filmstrip':
-      return { border: `24px solid ${frame.color}` };
+      return { border: `24px solid ${frame.borderColor}` };
+    case 'lights':
+      return { border: `24px solid ${frame.borderColor}` };
     default:
       return {};
   }
@@ -214,18 +435,20 @@ function getFrameThumbStyle(frame) {
       return { background: 'var(--glass)' };
     case 'solid':
       return { background: frame.color };
-    case 'gradient':
-      return { background: `linear-gradient(135deg, ${frame.colors.join(', ')})` };
+    case 'balloons':
+      return { background: 'linear-gradient(135deg, #b8860b, #ffd700, #daa520)' };
+    case 'stars':
+      return { background: frame.borderColor };
     case 'neon':
-      return { background: '#0a0a1a', boxShadow: `inset 0 0 10px ${frame.glowColor}, 0 0 8px ${frame.glowColor}` };
-    case 'rainbow':
-      return { background: 'linear-gradient(90deg, #f00, #ff8800, #ff0, #0f0, #00f, #80f)' };
-    case 'glitter':
-      return { background: `linear-gradient(135deg, ${frame.baseColor}, #fff, ${frame.baseColor})` };
+      return { background: frame.borderColor, boxShadow: `inset 0 0 10px ${frame.glowColor}, 0 0 8px ${frame.glowColor}` };
     case 'confetti':
-      return { background: frame.baseColor };
+      return { background: frame.borderColor };
+    case 'hearts':
+      return { background: frame.borderColor };
     case 'filmstrip':
-      return { background: frame.color };
+      return { background: frame.borderColor };
+    case 'lights':
+      return { background: frame.borderColor };
     default:
       return { background: 'var(--glass)' };
   }
@@ -354,7 +577,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
       });
 
       const canvas = document.createElement('canvas');
-      const frameWidth = selectedFrame !== 'none' ? 50 : 0;
+      const frameWidth = selectedFrame !== 'none' ? 60 : 0;
       canvas.width = img.width + frameWidth * 2;
       canvas.height = img.height + frameWidth * 2;
       const ctx = canvas.getContext('2d');
@@ -367,11 +590,14 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
       // Draw filtered image
       ctx.drawImage(img, frameWidth, frameWidth);
 
-      // Draw stickers
+      // Draw stickers (scale size from preview to actual image resolution)
+      const previewImg = previewRef.current?.querySelector('img');
+      const scaleRatio = previewImg ? (img.width / previewImg.clientWidth) : 1;
       for (const s of placedStickers) {
         const sx = frameWidth + (s.x / 100) * img.width;
         const sy = frameWidth + (s.y / 100) * img.height;
-        ctx.font = `${s.size}px serif`;
+        const scaledSize = Math.round(s.size * scaleRatio);
+        ctx.font = `${scaledSize}px serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(s.emoji, sx, sy);
@@ -392,10 +618,96 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
 
   return (
     <div className="editor-container">
-      {/* Preview area */}
+      {/* Top toolbar */}
+      <div className="editor-toolbar">
+        <div className="editor-tabs">
+          {[
+            { id: 'filters', label: '🎨 Filtros' },
+            ...(config.enableFrames !== false ? [{ id: 'frames', label: '🖼️ Marcos' }] : []),
+            ...(config.enableStickers !== false ? [{ id: 'stickers', label: '⭐ Stickers' }] : []),
+          ].map(tab => (
+            <button
+              key={tab.id}
+              className={`editor-tab ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="editor-panel">
+          {/* Filters - horizontal scroll */}
+          {activeTab === 'filters' && (
+            <div className="filter-grid">
+              {filterList.map(f => (
+                <div
+                  key={f.id}
+                  className={`filter-item ${selectedFilter === f.id ? 'active' : ''}`}
+                  onClick={() => setSelectedFilter(f.id)}
+                >
+                  {filterThumbs[f.id] ? (
+                    <img src={filterThumbs[f.id]} className="filter-thumb" alt={f.name} />
+                  ) : (
+                    <div className="filter-thumb flex-center">{f.emoji}</div>
+                  )}
+                  <span className="filter-name">{f.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Frames - horizontal scroll */}
+          {activeTab === 'frames' && (
+            <div className="filter-grid">
+              {FRAMES.map(f => (
+                <div
+                  key={f.id}
+                  className={`filter-item ${selectedFrame === f.id ? 'active' : ''}`}
+                  onClick={() => setSelectedFrame(f.id)}
+                >
+                  <div
+                    className="filter-thumb"
+                    style={{
+                      ...getFrameThumbStyle(f),
+                      border: f.type === 'neon' ? `2px solid ${f.neonColor || '#ff00ff'}` : '2px solid var(--glass-border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.3rem',
+                      color: f.textColor || '#fff',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {f.thumb || '🖼️'}
+                  </div>
+                  <span className="filter-name">{f.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Stickers - horizontal scroll */}
+          {activeTab === 'stickers' && (
+            <div className="sticker-grid">
+              {STICKERS.map(s => (
+                <div
+                  key={s.id}
+                  className="sticker-item"
+                  onClick={() => addSticker(s.emoji)}
+                >
+                  {s.emoji}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Photo preview - full width */}
       <div className="editor-preview" ref={previewRef} onClick={() => setSelectedSticker(null)}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Frame */}
+          {/* Frame overlay */}
           {selectedFrame !== 'none' && (
             <div style={{
               position: 'absolute',
@@ -403,10 +715,8 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
               borderRadius: 'calc(var(--radius) + 4px)',
               pointerEvents: 'none',
               zIndex: 1,
-              overflow: 'hidden',
               ...getFramePreviewStyle(selectedFrame),
             }}>
-              {/* Event name on frame */}
               <div style={{
                 position: 'absolute',
                 bottom: '-18px',
@@ -457,7 +767,6 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
               onDoubleClick={() => removeSticker(i)}
             >
               {s.emoji}
-              {/* Resize controls */}
               {selectedSticker === i && (
                 <div
                   style={{
@@ -481,9 +790,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                       backdropFilter: 'blur(8px)',
                     }}
                     onClick={(e) => { e.stopPropagation(); resizeSticker(i, -15); }}
-                  >
-                    −
-                  </button>
+                  >−</button>
                   <button
                     style={{
                       width: '36px', height: '36px', borderRadius: '50%',
@@ -493,9 +800,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                       backdropFilter: 'blur(8px)',
                     }}
                     onClick={(e) => { e.stopPropagation(); resizeSticker(i, 15); }}
-                  >
-                    +
-                  </button>
+                  >+</button>
                   <button
                     style={{
                       width: '36px', height: '36px', borderRadius: '50%',
@@ -504,9 +809,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                     onClick={(e) => { e.stopPropagation(); removeSticker(i); }}
-                  >
-                    ✕
-                  </button>
+                  >✕</button>
                 </div>
               )}
             </div>
@@ -514,121 +817,23 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div className="editor-sidebar">
-        {/* Tabs */}
-        <div className="editor-tabs">
-          {[
-            { id: 'filters', label: '🎨 Filtros' },
-            ...(config.enableFrames !== false ? [{ id: 'frames', label: '🖼️ Marcos' }] : []),
-            ...(config.enableStickers !== false ? [{ id: 'stickers', label: '⭐ Stickers' }] : []),
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={`editor-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Panel content */}
-        <div className="editor-panel">
-          {/* Filters */}
-          {activeTab === 'filters' && (
-            <div className="filter-grid">
-              {filterList.map(f => (
-                <div
-                  key={f.id}
-                  className={`filter-item ${selectedFilter === f.id ? 'active' : ''}`}
-                  onClick={() => setSelectedFilter(f.id)}
-                >
-                  {filterThumbs[f.id] ? (
-                    <img src={filterThumbs[f.id]} className="filter-thumb" alt={f.name} />
-                  ) : (
-                    <div className="filter-thumb flex-center">{f.emoji}</div>
-                  )}
-                  <span className="filter-name">{f.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Frames */}
-          {activeTab === 'frames' && (
-            <div className="filter-grid">
-              {FRAMES.map(f => (
-                <div
-                  key={f.id}
-                  className={`filter-item ${selectedFrame === f.id ? 'active' : ''}`}
-                  onClick={() => setSelectedFrame(f.id)}
-                >
-                  <div
-                    className="filter-thumb"
-                    style={{
-                      ...getFrameThumbStyle(f),
-                      border: f.type === 'neon' ? `2px solid ${f.color}` : '2px solid var(--glass-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: f.type === 'none' ? '1.5rem' : '0.8rem',
-                      color: f.textColor || '#fff',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {f.type === 'none' ? '✕' : 'Aa'}
-                  </div>
-                  <span className="filter-name">{f.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Stickers */}
-          {activeTab === 'stickers' && (
-            <>
-              <p style={{
-                fontSize: '0.8rem',
-                color: 'var(--text-muted)',
-                marginBottom: '12px',
-                textAlign: 'center',
-              }}>
-                Toca para agregar. Arrastra para mover. Usa +/− para cambiar tamano. Doble tap para borrar.
-              </p>
-              <div className="sticker-grid">
-                {STICKERS.map(s => (
-                  <div
-                    key={s.id}
-                    className="sticker-item"
-                    onClick={() => addSticker(s.emoji)}
-                  >
-                    {s.emoji}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="editor-actions">
-          <button
-            className="touch-btn touch-btn-ghost touch-btn-sm"
-            onClick={onRetake}
-            style={{ flex: 1 }}
-          >
-            🔄 Repetir
-          </button>
-          <button
-            className="touch-btn touch-btn-primary touch-btn-sm"
-            onClick={handleDone}
-            disabled={processing}
-            style={{ flex: 2 }}
-          >
-            {processing ? '⏳ Procesando...' : '✓ Listo'}
-          </button>
-        </div>
+      {/* Bottom actions */}
+      <div className="editor-actions">
+        <button
+          className="touch-btn touch-btn-ghost touch-btn-sm"
+          onClick={onRetake}
+          style={{ flex: 1 }}
+        >
+          🔄 Repetir
+        </button>
+        <button
+          className="touch-btn touch-btn-primary touch-btn-sm"
+          onClick={handleDone}
+          disabled={processing}
+          style={{ flex: 2 }}
+        >
+          {processing ? '⏳ Procesando...' : '✓ Listo'}
+        </button>
       </div>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />

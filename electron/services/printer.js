@@ -35,36 +35,53 @@ class PrinterService {
 
   _printWindows(filePath, printerName) {
     return new Promise((resolve, reject) => {
-      let cmd;
-      if (printerName) {
-        cmd = `rundll32 shimgvw.dll,ImageView_PrintTo "${filePath}" "${printerName}"`;
-      } else {
-        // Use PowerShell to print to default printer
-        const psScript = `
-          Add-Type -AssemblyName System.Drawing
-          $img = [System.Drawing.Image]::FromFile('${filePath.replace(/'/g, "''")}')
-          $doc = New-Object System.Drawing.Printing.PrintDocument
-          $doc.PrintPage.Add({
-            param($sender, $e)
-            $destRect = $e.MarginBounds
-            $srcRect = New-Object System.Drawing.Rectangle(0, 0, $img.Width, $img.Height)
-            $e.Graphics.DrawImage($img, $destRect, $srcRect, [System.Drawing.GraphicsUnit]::Pixel)
-          })
-          $doc.Print()
-          $img.Dispose()
-        `.replace(/\n/g, ' ');
-        cmd = `powershell -Command "${psScript}"`;
-      }
+      const safePath = filePath.replace(/\\/g, '\\\\').replace(/'/g, "''");
+      const printerLine = printerName
+        ? `$doc.PrinterSettings.PrinterName = '${printerName.replace(/'/g, "''")}'`
+        : '';
 
-      exec(cmd, { timeout: 30000 }, (error) => {
+      // Use PowerShell System.Drawing for all printing (most reliable)
+      const psScript = `
+        Add-Type -AssemblyName System.Drawing;
+        $img = [System.Drawing.Image]::FromFile('${safePath}');
+        $doc = New-Object System.Drawing.Printing.PrintDocument;
+        ${printerLine};
+        $doc.PrintPage.Add({
+          param($sender, $e)
+          $destRect = $e.MarginBounds;
+          $srcRect = New-Object System.Drawing.Rectangle(0, 0, $img.Width, $img.Height);
+          $ratio = [Math]::Min($destRect.Width / $img.Width, $destRect.Height / $img.Height);
+          $newW = [int]($img.Width * $ratio);
+          $newH = [int]($img.Height * $ratio);
+          $x = $destRect.X + [int](($destRect.Width - $newW) / 2);
+          $y = $destRect.Y + [int](($destRect.Height - $newH) / 2);
+          $dest = New-Object System.Drawing.Rectangle($x, $y, $newW, $newH);
+          $e.Graphics.DrawImage($img, $dest, $srcRect, [System.Drawing.GraphicsUnit]::Pixel);
+        });
+        $doc.Print();
+        $img.Dispose();
+        Write-Output 'OK'
+      `.replace(/\n/g, ' ');
+
+      console.log('[Print] Sending to printer:', printerName || '(default)');
+      exec(`powershell -Command "${psScript}"`, { timeout: 30000 }, (error, stdout, stderr) => {
         if (error) {
+          console.error('[Print] PowerShell error:', error.message);
+          console.error('[Print] stderr:', stderr);
           // Fallback: Start-Process -Verb Print
-          const fallback = `powershell -Command "Start-Process -FilePath '${filePath}' -Verb Print"`;
+          console.log('[Print] Trying fallback: Start-Process -Verb Print');
+          const fallback = `powershell -Command "Start-Process -FilePath '${safePath}' -Verb Print -Wait"`;
           exec(fallback, { timeout: 30000 }, (err2) => {
-            if (err2) reject(new Error('No se pudo imprimir la foto'));
-            else resolve();
+            if (err2) {
+              console.error('[Print] Fallback also failed:', err2.message);
+              reject(new Error(`No se pudo imprimir. Verificar impresora${printerName ? ': ' + printerName : ''}`));
+            } else {
+              console.log('[Print] Fallback succeeded');
+              resolve();
+            }
           });
         } else {
+          console.log('[Print] Success:', (stdout || '').trim());
           resolve();
         }
       });
