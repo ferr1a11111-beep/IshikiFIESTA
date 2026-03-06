@@ -24,23 +24,35 @@ if %errorLevel% neq 0 (
 )
 
 set "INSTALL_DIR=C:\IshikiFIESTA"
-set "SOURCE_DIR=%~dp0App"
+set "SOURCE_DIR=%~dp0"
 set "DATA_DIR=C:\IshikiFIESTA\IshikiFIESTA_Data"
 
-:: Verify source exists
-if not exist "%SOURCE_DIR%\IshikiFIESTA.exe" (
-    echo  [ERROR] No se encontro la carpeta "App" con IshikiFIESTA.exe
+:: Check what source we have: App folder (USB) or portable exe (download)
+set "MODE=none"
+if exist "%SOURCE_DIR%App\IshikiFIESTA.exe" set "MODE=folder"
+if exist "%SOURCE_DIR%IshikiFIESTA.exe" if "%MODE%"=="none" set "MODE=exe"
+
+if "%MODE%"=="none" (
+    echo  [ERROR] No se encontro IshikiFIESTA.exe
     echo.
-    echo  La estructura del pen debe ser:
+    echo  Asegurate de tener en la misma carpeta:
     echo    INSTALAR.bat
-    echo    App\IshikiFIESTA.exe
-    echo    App\resources\
+    echo    IshikiFIESTA.exe
+    echo.
+    echo  Descarga desde:
+    echo  github.com/ferr1a11111-beep/IshikiFIESTA/releases
     echo.
     pause
     exit /b 1
 )
 
-echo  Origen:  %SOURCE_DIR%
+if "%MODE%"=="folder" (
+    echo  Modo: Instalacion desde carpeta App
+    echo  Origen:  %SOURCE_DIR%App
+) else (
+    echo  Modo: Instalacion desde ejecutable portable
+    echo  Origen:  %SOURCE_DIR%IshikiFIESTA.exe
+)
 echo  Destino: %INSTALL_DIR%
 echo.
 
@@ -65,15 +77,30 @@ echo  [*] Reinstalando (se preservan datos del evento)...
 :: ========================================
 echo.
 echo  [1/4] Copiando archivos de la aplicacion...
-echo        Esto puede tardar unos minutos...
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
-xcopy "%SOURCE_DIR%\*" "%INSTALL_DIR%\" /E /Y /Q >nul 2>&1
-if %errorLevel% neq 0 (
-    echo  [ERROR] Fallo al copiar archivos. Verifica espacio en disco.
-    pause
-    exit /b 1
+if "%MODE%"=="folder" (
+    echo        Copiando carpeta App... puede tardar unos minutos...
+    xcopy "%SOURCE_DIR%App\*" "%INSTALL_DIR%\" /E /Y /Q >nul 2>&1
+    if %errorLevel% neq 0 (
+        echo  [ERROR] Fallo al copiar archivos. Verifica espacio en disco.
+        pause
+        exit /b 1
+    )
+) else (
+    echo        Copiando ejecutable portable...
+    copy /Y "%SOURCE_DIR%IshikiFIESTA.exe" "%INSTALL_DIR%\IshikiFIESTA.exe" >nul 2>&1
+    if %errorLevel% neq 0 (
+        echo  [ERROR] Fallo al copiar. Verifica espacio en disco.
+        pause
+        exit /b 1
+    )
+)
+
+:: Copy GUIA-RAPIDA if exists
+if exist "%SOURCE_DIR%GUIA-RAPIDA.txt" (
+    copy /Y "%SOURCE_DIR%GUIA-RAPIDA.txt" "%INSTALL_DIR%\GUIA-RAPIDA.txt" >nul 2>&1
 )
 
 echo  [OK] Archivos copiados a %INSTALL_DIR%
@@ -89,19 +116,17 @@ if not exist "%DATA_DIR%\config" mkdir "%DATA_DIR%\config"
 echo  [OK] Directorios creados en %DATA_DIR%
 
 :: ========================================
-:: STEP 3: Create Desktop shortcut
+:: STEP 3: Create Desktop shortcuts
 :: ========================================
-echo  [3/4] Creando acceso directo en el escritorio...
+echo  [3/4] Creando accesos directos en el escritorio...
 
+:: App shortcut
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws = New-Object -ComObject WScript.Shell; $sc = $ws.CreateShortcut([Environment]::GetFolderPath('Desktop') + '\IshikiFIESTA.lnk'); $sc.TargetPath = 'C:\IshikiFIESTA\IshikiFIESTA.exe'; $sc.WorkingDirectory = 'C:\IshikiFIESTA'; $sc.Description = 'IshikiFIESTA - Photo Booth'; $sc.Save()"
 
-:: Verify shortcut was created
-powershell -NoProfile -Command "if (Test-Path ([Environment]::GetFolderPath('Desktop') + '\IshikiFIESTA.lnk')) { exit 0 } else { exit 1 }"
-if %errorLevel% equ 0 (
-    echo  [OK] Acceso directo creado en el escritorio.
-) else (
-    echo  [!] No se pudo crear acceso directo. Crealo manualmente.
-)
+:: Gallery folder shortcut
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws = New-Object -ComObject WScript.Shell; $sc = $ws.CreateShortcut([Environment]::GetFolderPath('Desktop') + '\IshikiFIESTA - Fotos.lnk'); $sc.TargetPath = 'C:\IshikiFIESTA\IshikiFIESTA_Data\gallery'; $sc.IconLocation = 'imageres.dll,3'; $sc.Description = 'Carpeta de fotos IshikiFIESTA'; $sc.Save()"
+
+echo  [OK] Accesos directos creados (App + Carpeta de Fotos)
 
 :: ========================================
 :: STEP 4: Auto-start with Windows
@@ -129,9 +154,13 @@ echo  ========================================================
 echo.
 echo   INSTALACION COMPLETADA!
 echo.
-echo   Ubicacion: C:\IshikiFIESTA
-echo   Datos:     C:\IshikiFIESTA\IshikiFIESTA_Data
-echo   Acceso:    Escritorio - IshikiFIESTA
+echo   App:     C:\IshikiFIESTA\IshikiFIESTA.exe
+echo   Fotos:   C:\IshikiFIESTA\IshikiFIESTA_Data\gallery
+echo   Config:  C:\IshikiFIESTA\IshikiFIESTA_Data\config
+echo.
+echo   Accesos en Escritorio:
+echo   - IshikiFIESTA (ejecutar la app)
+echo   - IshikiFIESTA - Fotos (ver fotos del evento)
 echo.
 echo  ========================================================
 echo.
@@ -149,7 +178,7 @@ if /i "!LAUNCH!"=="S" (
 )
 
 echo.
-echo  Listo! Ya podes retirar el pen drive.
+echo  Listo!
 echo.
 pause
 exit /b 0
