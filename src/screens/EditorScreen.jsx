@@ -31,14 +31,14 @@ const STICKERS = [
 const FRAMES = [
   { id: 'none', name: 'Sin marco', type: 'none', thumb: '✕' },
   { id: 'classic_white', name: 'Clásico', type: 'solid', color: '#ffffff', textColor: '#555', thumb: '⬜' },
-  { id: 'elegant_black', name: 'Elegante', type: 'solid', color: '#1a1a1a', textColor: '#d4af37', thumb: '⬛' },
-  { id: 'fiesta_globos', name: 'Globos', type: 'balloons', borderColor: '#daa520', textColor: '#1a1a1a', thumb: '🎈' },
-  { id: 'estrellas_glam', name: 'Estrellas', type: 'stars', borderColor: '#1a1a2e', textColor: '#ffd700', thumb: '⭐' },
-  { id: 'neon_party', name: 'Neon', type: 'neon', borderColor: '#0a0a1a', neonColor: '#ff00ff', glowColor: 'rgba(255,0,255,0.6)', textColor: '#fff', thumb: '💜' },
-  { id: 'confetti', name: 'Confetti', type: 'confetti', borderColor: '#2c003e', textColor: '#ffd700', thumb: '🎊' },
-  { id: 'corazones', name: 'Corazones', type: 'hearts', borderColor: '#ffe0ec', textColor: '#c71585', thumb: '❤️' },
-  { id: 'vintage_film', name: 'Película', type: 'filmstrip', borderColor: '#1a1a1a', textColor: '#fff', thumb: '🎬' },
-  { id: 'luces_fiesta', name: 'Luces', type: 'lights', borderColor: '#1a1a2e', textColor: '#ffdd44', thumb: '💡' },
+  { id: 'fiesta', name: 'Fiesta', type: 'fiesta', textColor: '#fff', thumb: '🎉' },
+  { id: 'globos', name: 'Globos', type: 'balloons', textColor: '#333', thumb: '🎈' },
+  { id: 'dulces', name: 'Dulces', type: 'candy', textColor: '#fff', thumb: '🍭' },
+  { id: 'corazones', name: 'Corazones', type: 'hearts', textColor: '#c71585', thumb: '❤️' },
+  { id: 'estrellas', name: 'Estrellas', type: 'stars', textColor: '#ffd700', thumb: '⭐' },
+  { id: 'arcoiris', name: 'Arcoíris', type: 'rainbow', textColor: '#fff', thumb: '🌈' },
+  { id: 'flores', name: 'Flores', type: 'flowers', textColor: '#2d5a27', thumb: '🌸' },
+  { id: 'vintage_film', name: 'Película', type: 'filmstrip', textColor: '#fff', thumb: '🎬' },
 ];
 
 // --- Decorative frame helper drawing functions ---
@@ -122,7 +122,85 @@ function drawLightBulb(ctx, x, y, r, color) {
   ctx.restore();
 }
 
-// Draw decorative frame on canvas for final composition
+function drawLollipop(ctx, x, y, size, c1, c2) {
+  ctx.save();
+  const r = size * 0.4;
+  ctx.strokeStyle = '#D2691E'; ctx.lineWidth = size * 0.07; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y + r); ctx.lineTo(x, y + size); ctx.stroke();
+  ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = c2; ctx.lineWidth = size * 0.05;
+  ctx.beginPath(); ctx.arc(x, y, r * 0.25, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r * 0.55, 0, Math.PI * 1.5); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r * 0.82, Math.PI * 0.3, Math.PI * 1.3); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.arc(x - r * 0.2, y - r * 0.2, r * 0.17, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawPartyHat(ctx, x, y, size, c1, c2) {
+  ctx.save();
+  const h = size, w = size * 0.65;
+  ctx.fillStyle = c1;
+  ctx.beginPath(); ctx.moveTo(x, y - h * 0.5); ctx.lineTo(x - w / 2, y + h * 0.5); ctx.lineTo(x + w / 2, y + h * 0.5); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = c2; ctx.lineWidth = size * 0.05;
+  for (let i = 1; i <= 3; i++) { const t = i / 4, sw = w / 2 * (1 - t * 0.85), sy = y - h * 0.5 + h * t; ctx.beginPath(); ctx.moveTo(x - sw, sy); ctx.lineTo(x + sw, sy); ctx.stroke(); }
+  ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(x, y - h * 0.52, size * 0.09, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = c1; ctx.globalAlpha = 0.5;
+  const dotR = size * 0.04;
+  ctx.beginPath(); ctx.arc(x - w * 0.15, y + h * 0.15, dotR, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + w * 0.1, y - h * 0.05, dotR, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawCupcake(ctx, x, y, size, baseColor, frostColor) {
+  ctx.save();
+  const bw = size * 0.4, bh = size * 0.32;
+  ctx.fillStyle = baseColor;
+  ctx.beginPath(); ctx.moveTo(x - bw * 0.85, y); ctx.lineTo(x - bw * 0.6, y + bh); ctx.lineTo(x + bw * 0.6, y + bh); ctx.lineTo(x + bw * 0.85, y); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) { const lx = x - bw * 0.5 + bw * (i / 4); ctx.beginPath(); ctx.moveTo(lx, y); ctx.lineTo(lx, y + bh); ctx.stroke(); }
+  ctx.fillStyle = frostColor;
+  ctx.beginPath(); ctx.moveTo(x - bw * 0.9, y); ctx.quadraticCurveTo(x - bw * 0.3, y - bh * 0.8, x, y - bh * 0.2); ctx.quadraticCurveTo(x + bw * 0.3, y - bh * 0.8, x + bw * 0.9, y); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(x, y - bh * 0.45, size * 0.06, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawCandy(ctx, x, y, size, c1, c2) {
+  ctx.save();
+  const bw = size * 0.32, bh = size * 0.22;
+  ctx.fillStyle = c1; ctx.beginPath(); ctx.ellipse(x, y, bw, bh, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = c2; ctx.fillRect(x - size * 0.03, y - bh, size * 0.06, bh * 2);
+  ctx.fillStyle = c1;
+  ctx.beginPath(); ctx.moveTo(x - bw, y - bh * 0.5); ctx.lineTo(x - bw - size * 0.2, y - size * 0.15); ctx.lineTo(x - bw - size * 0.2, y + size * 0.15); ctx.lineTo(x - bw, y + bh * 0.5); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x + bw, y - bh * 0.5); ctx.lineTo(x + bw + size * 0.2, y - size * 0.15); ctx.lineTo(x + bw + size * 0.2, y + size * 0.15); ctx.lineTo(x + bw, y + bh * 0.5); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.ellipse(x - bw * 0.3, y - bh * 0.3, bw * 0.15, bh * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawGift(ctx, x, y, size, boxC, ribC) {
+  ctx.save();
+  const bw = size * 0.5, bh = size * 0.38;
+  ctx.fillStyle = boxC; ctx.fillRect(x - bw / 2, y - bh * 0.1, bw, bh);
+  ctx.fillRect(x - bw * 0.55, y - bh * 0.35, bw * 1.1, bh * 0.28);
+  ctx.fillStyle = ribC;
+  ctx.fillRect(x - size * 0.03, y - bh * 0.35, size * 0.06, bh * 1.25);
+  ctx.fillRect(x - bw / 2, y + bh * 0.1, bw, size * 0.05);
+  ctx.beginPath(); ctx.ellipse(x - size * 0.09, y - bh * 0.42, size * 0.09, size * 0.05, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + size * 0.09, y - bh * 0.42, size * 0.09, size * 0.05, 0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawFlower(ctx, x, y, size, petalC, centerC) {
+  ctx.save();
+  const pr = size * 0.19, cr = size * 0.35;
+  ctx.fillStyle = petalC;
+  for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 - Math.PI / 2; ctx.beginPath(); ctx.arc(x + Math.cos(a) * cr, y + Math.sin(a) * cr, pr, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = centerC; ctx.beginPath(); ctx.arc(x, y, size * 0.13, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// Draw decorative frame on canvas - patterned borders
 function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   const frame = FRAMES.find(f => f.id === frameId);
   if (!frame || frame.type === 'none') return;
@@ -136,246 +214,158 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
       break;
     }
 
+    case 'fiesta': {
+      // Diagonal rainbow stripes
+      ctx.save();
+      const stripeColors = ['#ff4444', '#ff8800', '#ffdd00', '#44dd44', '#4488ff', '#aa44ff', '#ff69b4'];
+      const stripeW = fw * 0.35;
+      const diag = Math.sqrt(w * w + h * h) * 1.5;
+      const totalStripes = Math.ceil(diag / stripeW);
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(-Math.PI / 4);
+      for (let i = -totalStripes; i < totalStripes; i++) {
+        ctx.fillStyle = stripeColors[((i % stripeColors.length) + stripeColors.length) % stripeColors.length];
+        ctx.fillRect(-diag / 2, i * stripeW, diag, stripeW);
+      }
+      ctx.restore();
+      break;
+    }
+
     case 'balloons': {
-      // Golden gradient border
-      const grad = ctx.createLinearGradient(0, 0, w, h);
-      grad.addColorStop(0, '#b8860b');
-      grad.addColorStop(0.5, '#ffd700');
-      grad.addColorStop(1, '#daa520');
-      ctx.fillStyle = grad;
+      // Sky blue with colorful polka dots
+      ctx.fillStyle = '#87CEEB';
       ctx.fillRect(0, 0, w, h);
-      // Balloons in corners and along edges
-      const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
-      const bR = fw * 0.42;
-      // Top-left cluster
-      drawBalloon(ctx, fw * 0.45, fw * 0.3, bR, bColors[0]);
-      drawBalloon(ctx, fw * 1.15, fw * 0.18, bR * 0.78, bColors[1]);
-      // Top-right cluster
-      drawBalloon(ctx, w - fw * 0.45, fw * 0.3, bR, bColors[2]);
-      drawBalloon(ctx, w - fw * 1.15, fw * 0.18, bR * 0.78, bColors[3]);
-      // Bottom-left cluster
-      drawBalloon(ctx, fw * 0.5, h - fw * 0.55, bR * 0.85, bColors[4]);
-      drawBalloon(ctx, fw * 1.25, h - fw * 0.45, bR * 0.65, bColors[5]);
-      // Bottom-right cluster
-      drawBalloon(ctx, w - fw * 0.5, h - fw * 0.55, bR * 0.85, bColors[6]);
-      drawBalloon(ctx, w - fw * 1.25, h - fw * 0.45, bR * 0.65, bColors[0]);
-      // Along top edge
-      for (let i = 0; i < 5; i++) {
-        const bx = fw * 2 + (w - fw * 4) * (i / 4);
-        drawBalloon(ctx, bx, fw * 0.28, bR * 0.6, bColors[(i + 2) % bColors.length]);
-      }
-      // Along bottom edge
-      for (let i = 0; i < 4; i++) {
-        const bx = fw * 2.5 + (w - fw * 5) * (i / 3);
-        drawBalloon(ctx, bx, h - fw * 0.5, bR * 0.55, bColors[(i + 4) % bColors.length]);
-      }
-      break;
-    }
-
-    case 'stars': {
-      // Dark blue border
-      ctx.fillStyle = frame.borderColor;
-      ctx.fillRect(0, 0, w, h);
-      // Subtle shimmer
-      ctx.fillStyle = 'rgba(255,215,0,0.03)';
-      ctx.fillRect(0, 0, w, h);
-      // Golden stars along all edges
-      const sOuter = fw * 0.32;
-      const sInner = sOuter * 0.4;
-      const goldA = '#ffd700';
-      const goldB = '#ffed85';
-      // Top
-      for (let i = 0; i < 9; i++) {
-        const sx = fw * 0.4 + (w - fw * 0.8) * (i / 8);
-        drawStar5(ctx, sx, fw * 0.42, sOuter * (0.7 + (i % 3) * 0.15), sInner * (0.7 + (i % 3) * 0.15), i % 2 === 0 ? goldA : goldB);
-      }
-      // Bottom
-      for (let i = 0; i < 9; i++) {
-        const sx = fw * 0.4 + (w - fw * 0.8) * (i / 8);
-        drawStar5(ctx, sx, h - fw * 0.42, sOuter * (0.8 + (i % 2) * 0.2), sInner * (0.8 + (i % 2) * 0.2), i % 2 === 0 ? goldB : goldA);
-      }
-      // Left
-      for (let i = 1; i < 6; i++) {
-        const sy = fw + (h - fw * 2) * (i / 6);
-        drawStar5(ctx, fw * 0.42, sy, sOuter * (0.6 + (i % 3) * 0.2), sInner * (0.6 + (i % 3) * 0.2), goldA);
-      }
-      // Right
-      for (let i = 1; i < 6; i++) {
-        const sy = fw + (h - fw * 2) * (i / 6);
-        drawStar5(ctx, w - fw * 0.42, sy, sOuter * (0.7 + (i % 2) * 0.15), sInner * (0.7 + (i % 2) * 0.15), goldB);
-      }
-      // Tiny sparkle dots scattered
-      ctx.fillStyle = 'rgba(255,215,0,0.5)';
-      for (let i = 0; i < 60; i++) {
-        const px = ((i * 7919 + 31) % w);
-        const py = ((i * 104729 + 31) % h);
-        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
-        ctx.beginPath();
-        ctx.arc(px, py, 1 + (i % 2), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      break;
-    }
-
-    case 'neon': {
-      ctx.fillStyle = frame.borderColor;
-      ctx.fillRect(0, 0, w, h);
-      // Multiple neon lines with glow effect
-      const neonPairs = [
-        { color: '#ff00ff', blur: 18 },
-        { color: '#00ffff', blur: 14 },
-        { color: '#ff00ff', blur: 8 },
-      ];
-      for (let line = 0; line < neonPairs.length; line++) {
-        ctx.save();
-        ctx.strokeStyle = neonPairs[line].color;
-        ctx.shadowColor = neonPairs[line].color;
-        ctx.shadowBlur = neonPairs[line].blur;
-        ctx.lineWidth = 3 - line;
-        const offset = fw * (0.2 + line * 0.15);
-        ctx.strokeRect(offset, offset, w - offset * 2, h - offset * 2);
-        ctx.restore();
-      }
-      // Corner accent circles
-      const cornerR = fw * 0.5;
-      const corners = [[0, 0], [w, 0], [w, h], [0, h]];
-      for (const [cx, cy] of corners) {
-        ctx.save();
-        ctx.strokeStyle = '#00ffff';
-        ctx.shadowColor = '#00ffff';
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(cx, cy, cornerR, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
-      break;
-    }
-
-    case 'confetti': {
-      ctx.fillStyle = frame.borderColor;
-      ctx.fillRect(0, 0, w, h);
-      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7', '#ff8800', '#ffffff'];
-      for (let i = 0; i < 200; i++) {
-        const px = ((i * 7919 + 31) % w);
-        const py = ((i * 104729 + 31) % h);
-        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate((i * 0.7) % (Math.PI * 2));
-        ctx.fillStyle = cColors[i % cColors.length];
-        if (i % 3 === 0) {
+      const dotColors = ['#ff4444', '#ffdd00', '#44dd44', '#ff69b4', '#aa44ff', '#ff8800', '#4488ff'];
+      const dotR = fw * 0.12;
+      const spacing = fw * 0.4;
+      let di = 0;
+      for (let dy = 0; dy < h + spacing; dy += spacing) {
+        const off = (Math.floor(dy / spacing) % 2) * (spacing / 2);
+        for (let dx = off; dx < w + spacing; dx += spacing) {
+          ctx.fillStyle = dotColors[di++ % dotColors.length];
           ctx.beginPath();
-          ctx.arc(0, 0, 2.5 + (i % 4), 0, Math.PI * 2);
+          ctx.arc(dx, dy, dotR, 0, Math.PI * 2);
           ctx.fill();
-        } else {
-          ctx.fillRect(-3, -6, 5 + (i % 3), 11);
         }
-        ctx.restore();
+      }
+      break;
+    }
+
+    case 'candy': {
+      // Pink/yellow zigzag pattern
+      ctx.fillStyle = '#ff69b4';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#ffdd00';
+      const zigH = fw * 0.22;
+      const zigW = fw * 0.28;
+      for (let by = 0; by < h; by += zigH * 2) {
+        ctx.beginPath();
+        ctx.moveTo(0, by);
+        for (let bx = 0; bx <= w + zigW; bx += zigW) {
+          ctx.lineTo(bx, by + ((Math.round(bx / zigW) % 2) === 0 ? 0 : zigH));
+        }
+        ctx.lineTo(w, by + zigH * 2);
+        ctx.lineTo(0, by + zigH * 2);
+        ctx.closePath();
+        ctx.fill();
       }
       break;
     }
 
     case 'hearts': {
-      ctx.fillStyle = frame.borderColor;
+      // Pink background with small heart pattern
+      ctx.fillStyle = '#ffe0ec';
       ctx.fillRect(0, 0, w, h);
-      const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585', '#d81b60'];
-      const hSize = fw * 0.38;
-      // Top
-      for (let i = 0; i < 10; i++) {
-        const hx = fw * 0.4 + (w - fw * 0.8) * (i / 9);
-        drawHeart(ctx, hx, fw * 0.3, hSize * (0.6 + (i % 3) * 0.2), hColors[i % hColors.length]);
+      const hSize = fw * 0.18;
+      const hSpacing = fw * 0.42;
+      const hColors = ['#ff69b4', '#ff1493', '#ff4081', '#e91e63'];
+      let hi = 0;
+      for (let hy = hSize; hy < h; hy += hSpacing) {
+        const off = (Math.floor(hy / hSpacing) % 2) * (hSpacing / 2);
+        for (let hx = off + hSize; hx < w; hx += hSpacing) {
+          if (hx > fw * 1.1 && hx < w - fw * 1.1 && hy > fw * 1.1 && hy < h - fw * 1.1) { hi++; continue; }
+          drawHeart(ctx, hx, hy, hSize, hColors[hi++ % hColors.length]);
+        }
       }
-      // Bottom
-      for (let i = 0; i < 10; i++) {
-        const hx = fw * 0.4 + (w - fw * 0.8) * (i / 9);
-        drawHeart(ctx, hx, h - fw * 0.5, hSize * (0.7 + (i % 3) * 0.15), hColors[(i + 3) % hColors.length]);
+      break;
+    }
+
+    case 'stars': {
+      // Dark purple with sparkle pattern
+      ctx.fillStyle = '#1a1a3e';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(255,215,0,0.4)';
+      for (let i = 0; i < 120; i++) {
+        const sx = ((i * 7919 + 31) % w);
+        const sy = ((i * 104729 + 31) % h);
+        if (sx > fw && sx < w - fw && sy > fw && sy < h - fw) continue;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1 + (i % 3), 0, Math.PI * 2);
+        ctx.fill();
       }
-      // Left
-      for (let i = 1; i < 7; i++) {
-        const hy = fw + (h - fw * 2) * (i / 7);
-        drawHeart(ctx, fw * 0.38, hy, hSize * (0.5 + (i % 3) * 0.2), hColors[(i + 1) % hColors.length]);
+      const sOuter = fw * 0.18, sInner = sOuter * 0.4;
+      for (let i = 0; i < 30; i++) {
+        const sx = ((i * 3571 + 17) % (w - fw * 0.4)) + fw * 0.2;
+        const sy = ((i * 2731 + 23) % (h - fw * 0.4)) + fw * 0.2;
+        if (sx > fw && sx < w - fw && sy > fw && sy < h - fw) continue;
+        drawStar5(ctx, sx, sy, sOuter, sInner, i % 2 === 0 ? '#ffd700' : '#ffed85');
       }
-      // Right
-      for (let i = 1; i < 7; i++) {
-        const hy = fw + (h - fw * 2) * (i / 7);
-        drawHeart(ctx, w - fw * 0.38, hy, hSize * (0.6 + (i % 2) * 0.2), hColors[(i + 2) % hColors.length]);
+      break;
+    }
+
+    case 'rainbow': {
+      // Thick concentric rainbow gradient
+      const rainbowColors = ['#ff0000', '#ff8800', '#ffff00', '#00cc00', '#0088ff', '#8800ff', '#ff00ff'];
+      const stripeW = fw / rainbowColors.length;
+      for (let i = 0; i < rainbowColors.length; i++) {
+        ctx.fillStyle = rainbowColors[i];
+        const off = stripeW * i;
+        ctx.fillRect(off, off, w - off * 2, h - off * 2);
+      }
+      break;
+    }
+
+    case 'flowers': {
+      // Warm yellow with green chevron/leaf pattern
+      ctx.fillStyle = '#ffe066';
+      ctx.fillRect(0, 0, w, h);
+      const leafColors = ['#2d8a4e', '#3cb371', '#228B22'];
+      for (let i = 0; i < 80; i++) {
+        const lx = ((i * 7919 + 31) % w);
+        const ly = ((i * 104729 + 31) % h);
+        if (lx > fw * 1.1 && lx < w - fw * 1.1 && ly > fw * 1.1 && ly < h - fw * 1.1) continue;
+        ctx.fillStyle = leafColors[i % leafColors.length];
+        if (i % 3 === 0) {
+          ctx.beginPath(); ctx.arc(lx, ly, fw * 0.06, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.save(); ctx.translate(lx, ly); ctx.rotate((i * 0.7) % (Math.PI * 2));
+          ctx.beginPath(); ctx.ellipse(0, 0, fw * 0.04, fw * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      }
+      ctx.strokeStyle = '#4CAF50'; ctx.lineWidth = 2;
+      for (let i = 0; i < 20; i++) {
+        const ax = fw * 0.2 + ((i * 3 + 5) % 17) / 17 * (w - fw * 0.4);
+        const ay = fw * 0.2 + ((i * 7 + 3) % 13) / 13 * (h - fw * 0.4);
+        if (ax > fw * 1.1 && ax < w - fw * 1.1 && ay > fw * 1.1 && ay < h - fw * 1.1) continue;
+        ctx.beginPath(); ctx.moveTo(ax - fw * 0.07, ay - fw * 0.03); ctx.lineTo(ax, ay + fw * 0.03); ctx.lineTo(ax + fw * 0.07, ay - fw * 0.03); ctx.stroke();
       }
       break;
     }
 
     case 'filmstrip': {
-      ctx.fillStyle = frame.borderColor;
+      ctx.fillStyle = '#1a1a1a';
       ctx.fillRect(0, 0, w, h);
-      // Film perforations along top and bottom
-      const holeW = fw * 0.38;
-      const holeH = fw * 0.5;
+      const holeW = fw * 0.38, holeH = fw * 0.5;
       const spacing = holeW * 2.2;
       ctx.fillStyle = '#333';
       for (let x = spacing; x < w - spacing / 2; x += spacing) {
         const rx = x - holeW / 2;
-        // Top holes
-        ctx.beginPath();
-        ctx.rect(rx, fw * 0.18, holeW, holeH);
-        ctx.fill();
-        // Bottom holes
-        ctx.beginPath();
-        ctx.rect(rx, h - fw * 0.18 - holeH, holeW, holeH);
-        ctx.fill();
+        ctx.beginPath(); ctx.rect(rx, fw * 0.18, holeW, holeH); ctx.fill();
+        ctx.beginPath(); ctx.rect(rx, h - fw * 0.18 - holeH, holeW, holeH); ctx.fill();
       }
-      // Thin edge line
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
       ctx.strokeRect(fw * 0.92, fw * 0.92, w - fw * 1.84, h - fw * 1.84);
-      break;
-    }
-
-    case 'lights': {
-      ctx.fillStyle = frame.borderColor;
-      ctx.fillRect(0, 0, w, h);
-      const lColors = ['#ff4444', '#ffdd00', '#44dd44', '#4488ff', '#ff69b4', '#ff8800', '#aa44ff', '#00dddd'];
-      const bulbR = fw * 0.17;
-      // Wire along all edges
-      ctx.strokeStyle = 'rgba(120,120,120,0.5)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, fw * 0.45);
-      ctx.lineTo(w, fw * 0.45);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, h - fw * 0.45);
-      ctx.lineTo(w, h - fw * 0.45);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(fw * 0.45, 0);
-      ctx.lineTo(fw * 0.45, h);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(w - fw * 0.45, 0);
-      ctx.lineTo(w - fw * 0.45, h);
-      ctx.stroke();
-      // Bulbs along top
-      let ci = 0;
-      for (let i = 0; i < 14; i++) {
-        const bx = fw * 0.2 + (w - fw * 0.4) * (i / 13);
-        drawLightBulb(ctx, bx, fw * 0.45, bulbR, lColors[ci++ % lColors.length]);
-      }
-      // Bottom
-      for (let i = 0; i < 14; i++) {
-        const bx = fw * 0.2 + (w - fw * 0.4) * (i / 13);
-        drawLightBulb(ctx, bx, h - fw * 0.45, bulbR, lColors[ci++ % lColors.length]);
-      }
-      // Left
-      for (let i = 1; i < 9; i++) {
-        const by = fw + (h - fw * 2) * (i / 9);
-        drawLightBulb(ctx, fw * 0.45, by, bulbR, lColors[ci++ % lColors.length]);
-      }
-      // Right
-      for (let i = 1; i < 9; i++) {
-        const by = fw + (h - fw * 2) * (i / 9);
-        drawLightBulb(ctx, w - fw * 0.45, by, bulbR, lColors[ci++ % lColors.length]);
-      }
       break;
     }
   }
@@ -395,96 +385,78 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   }
 }
 
-// Draw protruding/overlapping decorative elements (drawn ON TOP of the image) - 3x GRANDE
+// Draw protruding cartoon elements ON TOP of the image - party style!
 function drawFrameOverlays(ctx, frameId, w, h, fw) {
   const frame = FRAMES.find(f => f.id === frameId);
-  if (!frame || frame.type === 'none') return;
+  if (!frame || frame.type === 'none' || frame.type === 'solid' || frame.type === 'filmstrip') return;
 
   ctx.save();
 
   switch (frame.type) {
+    case 'fiesta': {
+      const sz = fw * 3.5;
+      // Party hats at corners
+      drawPartyHat(ctx, fw * 1.5, fw * 1.8, sz, '#ff4444', '#ffdd00');
+      drawPartyHat(ctx, w - fw * 1.5, fw * 1.8, sz * 0.85, '#4488ff', '#ffffff');
+      drawPartyHat(ctx, fw * 1.8, h - fw * 1.5, sz * 0.75, '#44dd44', '#ff69b4');
+      drawPartyHat(ctx, w - fw * 1.8, h - fw * 1.5, sz * 0.8, '#ff69b4', '#ffdd00');
+      // Lollipops at mid-edges
+      drawLollipop(ctx, w / 2, fw * 0.6, sz * 0.7, '#ff69b4', '#ffffff');
+      drawLollipop(ctx, w / 2, h - fw * 0.4, sz * 0.6, '#44dd44', '#ffdd00');
+      drawLollipop(ctx, fw * 0.6, h / 2, sz * 0.6, '#ffdd00', '#ff4444');
+      drawLollipop(ctx, w - fw * 0.6, h / 2, sz * 0.6, '#4488ff', '#ffffff');
+      // Small stars scattered along edges
+      for (let i = 0; i < 8; i++) {
+        const sx = fw + ((i * 1733 + 11) % (w - fw * 2));
+        const sy = i < 4 ? fw * 0.3 : h - fw * 0.3;
+        drawStar5(ctx, sx, sy, fw * 0.5, fw * 0.2, '#ffd700');
+      }
+      break;
+    }
+
     case 'balloons': {
       const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
       const bigR = fw * 3.9;
-      // Top-left cluster - big balloons protruding deep into photo
+      // Large balloons at corners
       drawBalloon(ctx, fw * 1.2, fw * 0.8, bigR, bColors[0]);
       drawBalloon(ctx, fw * 3.0, fw * 0.3, bigR * 0.7, bColors[1]);
-      drawBalloon(ctx, fw * 0.4, fw * 2.5, bigR * 0.55, bColors[2]);
-      // Top-right cluster
       drawBalloon(ctx, w - fw * 1.2, fw * 0.8, bigR, bColors[3]);
       drawBalloon(ctx, w - fw * 3.0, fw * 0.3, bigR * 0.7, bColors[4]);
-      drawBalloon(ctx, w - fw * 0.4, fw * 2.5, bigR * 0.55, bColors[5]);
-      // Bottom-left
-      drawBalloon(ctx, fw * 1.5, h - fw * 1.2, bigR * 0.9, bColors[5]);
-      drawBalloon(ctx, fw * 3.2, h - fw * 0.6, bigR * 0.6, bColors[6]);
-      // Bottom-right
-      drawBalloon(ctx, w - fw * 1.5, h - fw * 1.2, bigR * 0.9, bColors[6]);
-      drawBalloon(ctx, w - fw * 3.2, h - fw * 0.6, bigR * 0.6, bColors[0]);
-      break;
-    }
-
-    case 'stars': {
-      const goldA = '#ffd700';
-      const goldB = '#ffed85';
-      const bigR = fw * 2.55;
-      const bigIR = bigR * 0.4;
-      // Large corner stars protruding deep into photo
-      drawStar5(ctx, fw * 1.2, fw * 1.2, bigR, bigIR, goldA);
-      drawStar5(ctx, w - fw * 1.2, fw * 1.2, bigR * 0.9, bigIR * 0.9, goldB);
-      drawStar5(ctx, fw * 1.2, h - fw * 1.2, bigR * 0.85, bigIR * 0.85, goldB);
-      drawStar5(ctx, w - fw * 1.2, h - fw * 1.2, bigR * 0.95, bigIR * 0.95, goldA);
-      // Mid-edge stars
-      drawStar5(ctx, w / 2, fw * 0.5, bigR * 0.65, bigIR * 0.65, goldA);
-      drawStar5(ctx, w / 2, h - fw * 0.5, bigR * 0.65, bigIR * 0.65, goldB);
-      drawStar5(ctx, fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldA);
-      drawStar5(ctx, w - fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldB);
-      break;
-    }
-
-    case 'neon': {
-      // Big glow bleed effect into image corners
-      const glowR = fw * 4.5;
-      ctx.save();
-      ctx.globalAlpha = 0.3;
-      const nColors = ['#ff00ff', '#00ffff', '#ff00ff', '#00ffff'];
-      const corners = [[0, 0], [w, 0], [w, h], [0, h]];
-      for (let i = 0; i < corners.length; i++) {
-        const grad = ctx.createRadialGradient(corners[i][0], corners[i][1], 0, corners[i][0], corners[i][1], glowR);
-        grad.addColorStop(0, nColors[i]);
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(corners[i][0] - glowR, corners[i][1] - glowR, glowR * 2, glowR * 2);
-      }
-      ctx.restore();
-      break;
-    }
-
-    case 'confetti': {
-      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7', '#ff8800'];
-      // Big confetti pieces near edges, protruding deep into photo
-      for (let i = 0; i < 80; i++) {
-        const seed1 = ((i * 2731 + 17) % 1000) / 1000;
-        const seed2 = ((i * 3571 + 23) % 1000) / 1000;
-        const edge = i % 4;
-        let px, py;
-        if (edge === 0) { px = fw * seed1 * 4; py = fw + seed2 * (h - fw * 2); }
-        else if (edge === 1) { px = w - fw * seed1 * 4; py = fw + seed2 * (h - fw * 2); }
-        else if (edge === 2) { px = fw + seed1 * (w - fw * 2); py = fw * seed2 * 4; }
-        else { px = fw + seed1 * (w - fw * 2); py = h - fw * seed2 * 4; }
-
+      drawBalloon(ctx, fw * 1.5, h - fw * 1.2, bigR * 0.85, bColors[5]);
+      drawBalloon(ctx, w - fw * 1.5, h - fw * 1.2, bigR * 0.85, bColors[6]);
+      // Small confetti
+      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4'];
+      for (let i = 0; i < 30; i++) {
+        const cx = ((i * 2731 + 17) % w);
+        const cy = ((i * 3571 + 23) % h);
         ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate((i * 0.8) % (Math.PI * 2));
-        ctx.globalAlpha = 0.8;
+        ctx.globalAlpha = 0.7;
         ctx.fillStyle = cColors[i % cColors.length];
-        if (i % 3 === 0) {
-          ctx.beginPath();
-          ctx.arc(0, 0, 6 + (i % 10), 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(-6, -14, 12 + (i % 8), 27);
-        }
+        ctx.translate(cx, cy); ctx.rotate(i * 0.6);
+        ctx.fillRect(-3, -6, 6, 12);
         ctx.restore();
+      }
+      break;
+    }
+
+    case 'candy': {
+      const sz = fw * 3.2;
+      // Cupcakes at corners
+      drawCupcake(ctx, fw * 2, fw * 2.2, sz, '#DEB887', '#ff69b4');
+      drawCupcake(ctx, w - fw * 2, fw * 2.2, sz * 0.85, '#DEB887', '#87CEEB');
+      drawCupcake(ctx, fw * 2.5, h - fw * 1.8, sz * 0.75, '#DEB887', '#ff4444');
+      drawCupcake(ctx, w - fw * 2.5, h - fw * 1.8, sz * 0.75, '#DEB887', '#aa44ff');
+      // Lollipops at top/bottom mid
+      drawLollipop(ctx, w / 2, fw * 0.8, sz * 0.8, '#ff4444', '#ffffff');
+      drawLollipop(ctx, w / 2, h - fw * 0.5, sz * 0.65, '#44dd44', '#ffdd00');
+      // Candy at sides
+      drawCandy(ctx, fw * 1.0, h / 2, sz * 0.8, '#ff69b4', '#ffffff');
+      drawCandy(ctx, w - fw * 1.0, h / 2, sz * 0.8, '#4488ff', '#ffdd00');
+      // Small stars
+      for (let i = 0; i < 6; i++) {
+        const sx = fw + ((i * 2311 + 7) % (w - fw * 2));
+        const sy = i < 3 ? fw * 0.3 : h - fw * 0.3;
+        drawStar5(ctx, sx, sy, fw * 0.4, fw * 0.16, '#ffd700');
       }
       break;
     }
@@ -492,7 +464,7 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
     case 'hearts': {
       const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585'];
       const bigS = fw * 3.3;
-      // Big corner hearts protruding deep into photo
+      // Large hearts at corners
       drawHeart(ctx, fw * 1.2, fw * 1.2, bigS, hColors[0]);
       drawHeart(ctx, w - fw * 1.2, fw * 1.2, bigS * 0.9, hColors[1]);
       drawHeart(ctx, fw * 1.2, h - fw * 1.2, bigS * 0.85, hColors[2]);
@@ -505,23 +477,69 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
       break;
     }
 
-    case 'lights': {
-      const bulbR = fw * 0.96;
-      const lColors = ['#ff4444', '#ffdd00', '#44dd44', '#4488ff', '#ff69b4', '#ff8800'];
-      // Big glowing bulbs at corners protruding into photo
-      drawLightBulb(ctx, fw * 1.0, fw * 1.0, bulbR * 1.6, lColors[0]);
-      drawLightBulb(ctx, w - fw * 1.0, fw * 1.0, bulbR * 1.6, lColors[1]);
-      drawLightBulb(ctx, fw * 1.0, h - fw * 1.0, bulbR * 1.6, lColors[2]);
-      drawLightBulb(ctx, w - fw * 1.0, h - fw * 1.0, bulbR * 1.6, lColors[3]);
-      // Extra mid-edge bulbs
-      drawLightBulb(ctx, w / 2, fw * 0.3, bulbR * 1.2, lColors[4]);
-      drawLightBulb(ctx, w / 2, h - fw * 0.3, bulbR * 1.2, lColors[5]);
-      drawLightBulb(ctx, fw * 0.3, h / 2, bulbR * 1.2, lColors[0]);
-      drawLightBulb(ctx, w - fw * 0.3, h / 2, bulbR * 1.2, lColors[1]);
+    case 'stars': {
+      const goldA = '#ffd700', goldB = '#ffed85';
+      const bigR = fw * 2.55, bigIR = bigR * 0.4;
+      // Large corner stars
+      drawStar5(ctx, fw * 1.2, fw * 1.2, bigR, bigIR, goldA);
+      drawStar5(ctx, w - fw * 1.2, fw * 1.2, bigR * 0.9, bigIR * 0.9, goldB);
+      drawStar5(ctx, fw * 1.2, h - fw * 1.2, bigR * 0.85, bigIR * 0.85, goldB);
+      drawStar5(ctx, w - fw * 1.2, h - fw * 1.2, bigR * 0.95, bigIR * 0.95, goldA);
+      // Mid-edge stars
+      drawStar5(ctx, w / 2, fw * 0.5, bigR * 0.65, bigIR * 0.65, goldA);
+      drawStar5(ctx, w / 2, h - fw * 0.5, bigR * 0.65, bigIR * 0.65, goldB);
+      drawStar5(ctx, fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldA);
+      drawStar5(ctx, w - fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldB);
       break;
     }
 
-    // filmstrip: no overlays (intentionally rigid/rectangular)
+    case 'rainbow': {
+      // Large colorful circles/blobs at corners (like reference images)
+      const circleR = fw * 3;
+      const colors = ['#ff0000', '#ff8800', '#ffff00', '#00cc00', '#0088ff', '#8800ff', '#ff00ff'];
+      const cornerPositions = [[fw * 0.5, fw * 0.5], [w - fw * 0.5, fw * 0.5], [fw * 0.5, h - fw * 0.5], [w - fw * 0.5, h - fw * 0.5]];
+      for (let ci = 0; ci < cornerPositions.length; ci++) {
+        const [cx, cy] = cornerPositions[ci];
+        for (let j = 0; j < 3; j++) {
+          const offX = ((ci * 3 + j) * 37 % 7 - 3) * fw * 0.4;
+          const offY = ((ci * 3 + j) * 41 % 7 - 3) * fw * 0.4;
+          ctx.fillStyle = colors[(ci * 3 + j) % colors.length];
+          ctx.globalAlpha = 0.85;
+          ctx.beginPath();
+          ctx.arc(cx + offX, cy + offY, circleR * (0.5 + (j % 3) * 0.2), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      break;
+    }
+
+    case 'flowers': {
+      const sz = fw * 2.8;
+      const petalColors = ['#ff69b4', '#ff4444', '#aa44ff', '#ff8800', '#4488ff'];
+      const centerColors = ['#ffdd00', '#ffd700', '#ffaa00'];
+      // Large flowers at corners
+      drawFlower(ctx, fw * 1.5, fw * 1.5, sz, petalColors[0], centerColors[0]);
+      drawFlower(ctx, w - fw * 1.5, fw * 1.5, sz * 0.85, petalColors[1], centerColors[1]);
+      drawFlower(ctx, fw * 1.8, h - fw * 1.3, sz * 0.8, petalColors[2], centerColors[2]);
+      drawFlower(ctx, w - fw * 1.8, h - fw * 1.3, sz * 0.85, petalColors[3], centerColors[0]);
+      // Small flowers at mid-edges
+      drawFlower(ctx, w / 2, fw * 0.4, sz * 0.5, petalColors[4], centerColors[1]);
+      drawFlower(ctx, w / 2, h - fw * 0.4, sz * 0.45, petalColors[0], centerColors[2]);
+      drawFlower(ctx, fw * 0.4, h / 2, sz * 0.45, petalColors[1], centerColors[0]);
+      drawFlower(ctx, w - fw * 0.4, h / 2, sz * 0.45, petalColors[2], centerColors[1]);
+      // Leaf accents
+      ctx.fillStyle = '#2d8a4e';
+      for (let i = 0; i < 12; i++) {
+        const lx = fw * 0.5 + ((i * 1733 + 11) % (w - fw));
+        const ly = fw * 0.5 + ((i * 2311 + 7) % (h - fw));
+        ctx.save();
+        ctx.translate(lx, ly); ctx.rotate((i * 0.9) % (Math.PI * 2));
+        ctx.beginPath(); ctx.ellipse(0, 0, fw * 0.12, fw * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
   }
 
   ctx.restore();
@@ -530,26 +548,17 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
 // Thumbnail background for frame selector
 function getFrameThumbStyle(frame) {
   switch (frame.type) {
-    case 'none':
-      return { background: 'var(--glass)' };
-    case 'solid':
-      return { background: frame.color };
-    case 'balloons':
-      return { background: 'linear-gradient(135deg, #b8860b, #ffd700, #daa520)' };
-    case 'stars':
-      return { background: frame.borderColor };
-    case 'neon':
-      return { background: frame.borderColor, boxShadow: `inset 0 0 10px ${frame.glowColor}, 0 0 8px ${frame.glowColor}` };
-    case 'confetti':
-      return { background: frame.borderColor };
-    case 'hearts':
-      return { background: frame.borderColor };
-    case 'filmstrip':
-      return { background: frame.borderColor };
-    case 'lights':
-      return { background: frame.borderColor };
-    default:
-      return { background: 'var(--glass)' };
+    case 'none': return { background: 'var(--glass)' };
+    case 'solid': return { background: frame.color };
+    case 'fiesta': return { background: 'repeating-linear-gradient(-45deg, #ff4444, #ff4444 3px, #ffdd00 3px, #ffdd00 6px, #44dd44 6px, #44dd44 9px, #4488ff 9px, #4488ff 12px)' };
+    case 'balloons': return { background: '#87CEEB' };
+    case 'candy': return { background: 'linear-gradient(135deg, #ff69b4, #ffdd00)' };
+    case 'hearts': return { background: '#ffe0ec' };
+    case 'stars': return { background: '#1a1a3e' };
+    case 'rainbow': return { background: 'linear-gradient(135deg, #ff0000, #ff8800, #ffff00, #00cc00, #0088ff, #8800ff)' };
+    case 'flowers': return { background: '#ffe066' };
+    case 'filmstrip': return { background: '#1a1a1a' };
+    default: return { background: 'var(--glass)' };
   }
 }
 
