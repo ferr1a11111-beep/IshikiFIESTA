@@ -1,0 +1,20 @@
+node_modules/
+dist/
+dist-react/
+IshikiFIESTA-Portable.zip
+IshikiFIESTA_Data/
+*.log
+.DS_Store
+Thumbs.db
+
+# Old versions
+snapfiesta-v1.0/
+snapfiesta-v1.0.zip
+snapfiesta-v2.0/
+
+# Runtime data
+gallery/
+config/
+
+# Claude config
+.claude/

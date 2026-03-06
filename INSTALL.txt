@@ -1,0 +1,113 @@
+============================================================
+  IshikiFIESTA v3.0 - Guia de Instalacion para el Totem
+============================================================
+
+REQUISITOS:
+- Windows 10/11
+- Node.js 20.x LTS (descargar de https://nodejs.org)
+- Impresora de fotos (Epson u otra) conectada por USB
+- Impresora termica 80mm (integrada en el totem)
+
+============================================================
+INSTALACION PASO A PASO:
+============================================================
+
+1. Instalar Node.js LTS en el totem (siguiente, siguiente, finalizar)
+
+2. Copiar la carpeta IshikiFIESTA al disco C:\
+   (NO copiar: node_modules, dist-react, snapfiesta-v1.0, snapfiesta-v2.0)
+
+3. Abrir CMD como Administrador y ejecutar:
+
+   cd C:\IshikiFIESTA
+   npm install
+   npm run build
+
+4. Para iniciar la app:
+
+   Doble click en start.bat
+
+   O desde CMD:
+   cd C:\IshikiFIESTA
+   npm run dev
+
+============================================================
+AUTO-INICIO CON WINDOWS:
+============================================================
+
+Opcion A (Recomendada): Carpeta de Inicio
+1. Presionar Win+R, escribir: shell:startup
+2. Crear un acceso directo a start.bat en esa carpeta
+
+Opcion B: Tarea Programada
+1. Abrir "Programador de tareas" (Task Scheduler)
+2. Crear tarea basica: "IshikiFIESTA"
+3. Desencadenador: "Al iniciar sesion"
+4. Accion: Iniciar programa -> C:\IshikiFIESTA\start.bat
+
+============================================================
+CONFIGURACION DEL EVENTO:
+============================================================
+
+Desde la app:
+- Tocar 5 veces rapido la esquina SUPERIOR DERECHA
+- Se abre el Panel de Administracion
+- Configurar: nombre del evento, impresoras, funciones
+
+O editar manualmente: config\config.json
+
+============================================================
+IMPRESORAS:
+============================================================
+
+Impresora de fotos (Epson):
+- Instalar el driver de la impresora Epson
+- Configurarla como impresora predeterminada de Windows
+- La app usa la impresora predeterminada automaticamente
+- O seleccionarla desde el Admin Panel
+
+Impresora termica (integrada):
+- Verificar que tenga driver instalado
+- Seleccionarla en el Admin Panel como "Impresora termica"
+- Activa/desactiva desde Admin > "Frases divertidas (termica)"
+
+============================================================
+WIFI SHARING (QR para descargar fotos al celular):
+============================================================
+
+- La app inicia un servidor en puerto 8080 automaticamente
+- Los invitados deben estar en la misma red WiFi que el totem
+- Al sacar foto, aparece un QR que lleva a la descarga
+- Si no hay WiFi: desactivar desde Admin > "QR para descargar fotos"
+
+Para crear hotspot WiFi desde el totem:
+1. Configuracion > Red > Zona de acceso movil
+2. Activar "Zona de acceso movil"
+3. Los invitados se conectan a esa red
+
+============================================================
+SOLUCION DE PROBLEMAS:
+============================================================
+
+La camara no funciona:
+- Verificar en Configuracion > Privacidad > Camara que este habilitada
+- Si hay varias camaras, probar desconectando las que no se usen
+
+No imprime fotos:
+- Verificar que la impresora Epson esta encendida y con papel
+- Verificar que es la impresora predeterminada de Windows
+- Imprimir pagina de prueba desde Windows
+
+La impresora termica no imprime:
+- Verificar el nombre en Admin Panel
+- Probar enviar texto de prueba desde Windows
+
+La app no inicia:
+- Verificar que Node.js esta instalado: node --version
+- Ejecutar npm install de nuevo
+- Revisar errores en la consola CMD
+
+============================================================
+CONTACTO / SOPORTE:
+IshikiFIESTA v3.0
+============================================================

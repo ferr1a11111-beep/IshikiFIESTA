@@ -1,0 +1,64 @@
+{
+  "name": "ishiki-fiesta",
+  "version": "3.0.0",
+  "description": "IshikiFIESTA - Photo Booth Profesional para Eventos y Fiestas",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "build": "vite build && electron-builder --win portable",
+    "build:react": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "qrcode": "^1.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
+    "vite": "^5.0.12",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.ishiki.fiesta",
+    "productName": "IshikiFIESTA",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    },
+    "portable": {
+      "artifactName": "IshikiFIESTA.exe"
+    },
+    "files": [
+      "electron/**/*",
+      "dist-react/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      },
+      {
+        "from": "electron/data",
+        "to": "data"
+      },
+      {
+        "from": "config",
+        "to": "config",
+        "filter": ["**/*"]
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "gallery",
+        "to": "gallery"
+      }
+    ]
+  }
+}
