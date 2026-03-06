@@ -603,60 +603,137 @@ function getFrameThumbStyle(frame) {
   }
 }
 
+// Load multiple images from data URLs
+function loadImages(frameSrcs) {
+  return new Promise((resolve) => {
+    if (!frameSrcs || frameSrcs.length === 0) { resolve([]); return; }
+    const images = [];
+    let loaded = 0;
+    frameSrcs.forEach((src, i) => {
+      const img = new Image();
+      img.onload = () => {
+        images[i] = img;
+        loaded++;
+        if (loaded === frameSrcs.length) resolve(images);
+      };
+      img.onerror = () => {
+        images[i] = null;
+        loaded++;
+        if (loaded === frameSrcs.length) resolve(images);
+      };
+      img.src = src;
+    });
+  });
+}
+
 // Compose multiple frames into a vertical photo strip (classic photo booth style)
 function composeStripImage(frames) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     if (!frames || frames.length < 2) {
       resolve(frames?.[0] || null);
       return;
     }
 
-    const images = [];
-    let loaded = 0;
+    const images = await loadImages(frames);
+    const validImages = images.filter(Boolean);
+    if (validImages.length === 0) { resolve(null); return; }
 
-    frames.forEach((src, i) => {
-      const img = new Image();
-      img.onload = () => {
-        images[i] = img;
-        loaded++;
-        if (loaded === frames.length) {
-          // All loaded - compose strip
-          const padding = 20; // gap between photos
-          const border = 30; // white border around the strip
-          const imgW = images[0].width;
-          const imgH = images[0].height;
+    const padding = 20;
+    const border = 30;
+    const imgW = validImages[0].width;
+    const imgH = validImages[0].height;
 
-          const canvas = document.createElement('canvas');
-          canvas.width = imgW + border * 2;
-          canvas.height = (imgH * frames.length) + (padding * (frames.length - 1)) + border * 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = imgW + border * 2;
+    canvas.height = (imgH * validImages.length) + (padding * (validImages.length - 1)) + border * 2;
 
-          const ctx = canvas.getContext('2d');
-          // White background (classic photo strip)
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Draw each photo
-          images.forEach((img, idx) => {
-            const y = border + idx * (imgH + padding);
-            ctx.drawImage(img, border, y, imgW, imgH);
-          });
-
-          // Subtle separator lines
-          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-          ctx.lineWidth = 1;
-          for (let i = 1; i < frames.length; i++) {
-            const lineY = border + i * imgH + (i - 0.5) * padding;
-            ctx.beginPath();
-            ctx.moveTo(border, lineY);
-            ctx.lineTo(border + imgW, lineY);
-            ctx.stroke();
-          }
-
-          resolve(canvas.toDataURL('image/png'));
-        }
-      };
-      img.src = src;
+    validImages.forEach((img, idx) => {
+      const y = border + idx * (imgH + padding);
+      ctx.drawImage(img, border, y, imgW, imgH);
     });
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < validImages.length; i++) {
+      const lineY = border + i * imgH + (i - 0.5) * padding;
+      ctx.beginPath();
+      ctx.moveTo(border, lineY);
+      ctx.lineTo(border + imgW, lineY);
+      ctx.stroke();
+    }
+
+    resolve(canvas.toDataURL('image/png'));
+  });
+}
+
+// Compose frames into a grid collage (for GIF/Boomerang modes)
+// GIF: 2x4 grid (8 frames), Boomerang: 2x3 grid (6 frames)
+function composeGridImage(frames, modeLabel) {
+  return new Promise(async (resolve) => {
+    if (!frames || frames.length < 2) {
+      resolve(frames?.[0] || null);
+      return;
+    }
+
+    const images = await loadImages(frames);
+    const validImages = images.filter(Boolean);
+    if (validImages.length === 0) { resolve(null); return; }
+
+    const cols = 2;
+    const rows = Math.ceil(validImages.length / cols);
+    const padding = 10; // gap between cells
+    const border = 20; // outer border
+    const headerH = 50; // space for mode label at bottom
+
+    const imgW = validImages[0].width;
+    const imgH = validImages[0].height;
+    // Scale down each cell since we're putting multiple in a grid
+    const cellW = imgW;
+    const cellH = imgH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = (cellW * cols) + (padding * (cols - 1)) + border * 2;
+    canvas.height = (cellH * rows) + (padding * (rows - 1)) + border * 2 + headerH;
+
+    const ctx = canvas.getContext('2d');
+    // Dark background for grid
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw each frame in grid
+    validImages.forEach((img, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const x = border + col * (cellW + padding);
+      const y = border + row * (cellH + padding);
+
+      // White cell background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - 2, y - 2, cellW + 4, cellH + 4);
+
+      // Draw image
+      ctx.drawImage(img, x, y, cellW, cellH);
+
+      // Frame number
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(x, y, 40, 30);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${idx + 1}`, x + 20, y + 21);
+    });
+
+    // Mode label at bottom
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px "Fredoka", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(modeLabel, canvas.width / 2, canvas.height - border);
+
+    resolve(canvas.toDataURL('image/png'));
   });
 }
 
@@ -677,17 +754,31 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
   const [dragging, setDragging] = useState(null); // { index, startX, startY }
   const [selectedSticker, setSelectedSticker] = useState(null); // index or null
 
-  // Compose strip on mount if mode is strip and we have multiple frames
+  // Compose multi-frame modes on mount (strip, gif, boomerang)
   useEffect(() => {
-    if (mode === 'strip' && capturedFrames && capturedFrames.length > 1) {
-      composeStripImage(capturedFrames).then((composed) => {
-        setBaseImage(composed);
-        setFilteredImage(composed);
-      });
-    } else {
-      setBaseImage(image);
-      setFilteredImage(image);
+    if (capturedFrames && capturedFrames.length > 1) {
+      let composePromise;
+      if (mode === 'strip') {
+        composePromise = composeStripImage(capturedFrames);
+      } else if (mode === 'gif') {
+        composePromise = composeGridImage(capturedFrames, '🎬 GIF Animado');
+      } else if (mode === 'boomerang') {
+        composePromise = composeGridImage(capturedFrames, '🔄 Boomerang');
+      }
+
+      if (composePromise) {
+        composePromise.then((composed) => {
+          if (composed) {
+            setBaseImage(composed);
+            setFilteredImage(composed);
+          }
+        });
+        return;
+      }
     }
+    // Single photo mode or no frames
+    setBaseImage(image);
+    setFilteredImage(image);
   }, [mode, capturedFrames, image]);
 
   // Generate filter thumbnails

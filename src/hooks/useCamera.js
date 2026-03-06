@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+// Keywords that identify IR/night vision cameras (Windows Hello, depth sensors, etc.)
+const IR_KEYWORDS = ['ir ', 'ir_', 'infrared', 'night', 'windows hello', 'depth', 'tobii'];
+
+function isIRCamera(label) {
+  const name = (label || '').toLowerCase();
+  return IR_KEYWORDS.some(kw => name.includes(kw));
+}
+
 export default function useCamera() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -9,14 +17,63 @@ export default function useCamera() {
   const start = useCallback(async () => {
     try {
       setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
+
+      // Step 1: Get initial stream to trigger permission prompt
+      let stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1920 },
           height: { ideal: 1080 },
-          facingMode: 'user',
         },
         audio: false,
       });
+
+      // Step 2: Check if we got an IR camera, and switch if needed
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        console.log('[Camera] Found cameras:', cameras.map(c => c.label || 'unnamed'));
+
+        if (cameras.length > 1) {
+          const currentTrack = stream.getVideoTracks()[0];
+          const currentLabel = currentTrack.label || '';
+          console.log('[Camera] Currently using:', currentLabel);
+
+          if (isIRCamera(currentLabel)) {
+            console.log('[Camera] IR camera detected! Switching to regular camera...');
+            // Stop the IR camera
+            stream.getTracks().forEach(t => t.stop());
+
+            // Find a regular (non-IR) camera
+            const regularCamera = cameras.find(c => !isIRCamera(c.label));
+
+            if (regularCamera) {
+              console.log('[Camera] Switching to:', regularCamera.label);
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  deviceId: { exact: regularCamera.deviceId },
+                  width: { ideal: 1920 },
+                  height: { ideal: 1080 },
+                },
+                audio: false,
+              });
+            } else {
+              // All cameras seem to be IR - try again without filter
+              console.log('[Camera] No regular camera found, using first available');
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  width: { ideal: 1920 },
+                  height: { ideal: 1080 },
+                },
+                audio: false,
+              });
+            }
+          }
+        }
+      } catch (enumErr) {
+        // enumerateDevices failed - just use whatever we got
+        console.warn('[Camera] Could not enumerate devices:', enumErr);
+      }
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -24,7 +81,7 @@ export default function useCamera() {
         setIsReady(true);
       }
     } catch (err) {
-      console.error('Camera error:', err);
+      console.error('[Camera] Error:', err);
       setError('No se pudo acceder a la camara. Verifica los permisos.');
       setIsReady(false);
     }
