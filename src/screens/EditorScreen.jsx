@@ -603,12 +603,70 @@ function getFrameThumbStyle(frame) {
   }
 }
 
+// Compose multiple frames into a vertical photo strip (classic photo booth style)
+function composeStripImage(frames) {
+  return new Promise((resolve) => {
+    if (!frames || frames.length < 2) {
+      resolve(frames?.[0] || null);
+      return;
+    }
+
+    const images = [];
+    let loaded = 0;
+
+    frames.forEach((src, i) => {
+      const img = new Image();
+      img.onload = () => {
+        images[i] = img;
+        loaded++;
+        if (loaded === frames.length) {
+          // All loaded - compose strip
+          const padding = 20; // gap between photos
+          const border = 30; // white border around the strip
+          const imgW = images[0].width;
+          const imgH = images[0].height;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = imgW + border * 2;
+          canvas.height = (imgH * frames.length) + (padding * (frames.length - 1)) + border * 2;
+
+          const ctx = canvas.getContext('2d');
+          // White background (classic photo strip)
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Draw each photo
+          images.forEach((img, idx) => {
+            const y = border + idx * (imgH + padding);
+            ctx.drawImage(img, border, y, imgW, imgH);
+          });
+
+          // Subtle separator lines
+          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+          ctx.lineWidth = 1;
+          for (let i = 1; i < frames.length; i++) {
+            const lineY = border + i * imgH + (i - 0.5) * padding;
+            ctx.beginPath();
+            ctx.moveTo(border, lineY);
+            ctx.lineTo(border + imgW, lineY);
+            ctx.stroke();
+          }
+
+          resolve(canvas.toDataURL('image/png'));
+        }
+      };
+      img.src = src;
+    });
+  });
+}
+
 export default function EditorScreen({ config, image, frames: capturedFrames, mode, onDone, onRetake }) {
   const [activeTab, setActiveTab] = useState('filters');
   const [selectedFilter, setSelectedFilter] = useState('normal');
   const [selectedFrame, setSelectedFrame] = useState('none');
   const [placedStickers, setPlacedStickers] = useState([]);
   const [filterThumbs, setFilterThumbs] = useState({});
+  const [baseImage, setBaseImage] = useState(image); // original or composed strip
   const [filteredImage, setFilteredImage] = useState(image);
   const [processing, setProcessing] = useState(false);
   const canvasRef = useRef(null);
@@ -619,28 +677,41 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
   const [dragging, setDragging] = useState(null); // { index, startX, startY }
   const [selectedSticker, setSelectedSticker] = useState(null); // index or null
 
+  // Compose strip on mount if mode is strip and we have multiple frames
+  useEffect(() => {
+    if (mode === 'strip' && capturedFrames && capturedFrames.length > 1) {
+      composeStripImage(capturedFrames).then((composed) => {
+        setBaseImage(composed);
+        setFilteredImage(composed);
+      });
+    } else {
+      setBaseImage(image);
+      setFilteredImage(image);
+    }
+  }, [mode, capturedFrames, image]);
+
   // Generate filter thumbnails
   useEffect(() => {
-    if (!image) return;
+    if (!baseImage) return;
     const gen = async () => {
       const thumbs = {};
       for (const f of filterList) {
-        thumbs[f.id] = await generateFilterThumbnail(image, f.id);
+        thumbs[f.id] = await generateFilterThumbnail(baseImage, f.id);
       }
       setFilterThumbs(thumbs);
     };
     gen();
-  }, [image]);
+  }, [baseImage]);
 
   // Apply filter when selection changes
   useEffect(() => {
-    if (!image) return;
+    if (!baseImage) return;
     const apply = async () => {
-      const result = await applyFilterToImage(image, selectedFilter);
+      const result = await applyFilterToImage(baseImage, selectedFilter);
       setFilteredImage(result);
     };
     apply();
-  }, [image, selectedFilter]);
+  }, [baseImage, selectedFilter]);
 
   // Draw frame preview on canvas when frame selection changes
   useEffect(() => {
