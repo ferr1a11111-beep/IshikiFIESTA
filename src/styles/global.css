@@ -424,15 +424,15 @@ html, body, #root {
 
 .editor-preview img,
 .editor-preview canvas {
-  max-width: 90%;
-  max-height: 85%;
+  max-width: 95%;
+  max-height: 92%;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
 .editor-sidebar {
-  width: 380px;
-  min-width: 380px;
+  width: 300px;
+  min-width: 300px;
   background: rgba(20, 20, 40, 0.98);
   border-left: 2px solid var(--primary);
   display: flex;
@@ -448,10 +448,10 @@ html, body, #root {
 
 .editor-tab {
   flex: 1;
-  padding: 20px 16px;
+  padding: 16px 12px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
   background: transparent;
@@ -514,8 +514,8 @@ html, body, #root {
 }
 
 .filter-thumb {
-  width: 85px;
-  height: 85px;
+  width: 75px;
+  height: 75px;
   border-radius: 12px;
   object-fit: cover;
   background: rgba(255, 255, 255, 0.1);
@@ -1001,3 +1001,135 @@ html, body, #root {
 .mt-auto { margin-top: auto; }
 .mb-16 { margin-bottom: 16px; }
 .w-full { width: 100%; }
+
+/* ============================================================
+   Virtual Keyboard (touch-optimized)
+   ============================================================ */
+.virtual-keyboard {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(20, 20, 35, 0.98);
+  backdrop-filter: blur(20px);
+  border-top: 2px solid var(--primary);
+  padding: 8px 12px 16px;
+  animation: slideUp 0.25s ease-out;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.vk-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 8px;
+  position: relative;
+}
+
+.vk-handle {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.vk-close {
+  position: absolute;
+  right: 8px;
+  top: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.vk-close:hover, .vk-close:active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.vk-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.vk-key {
+  min-width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.15rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, transform 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+  padding: 0 4px;
+}
+
+.vk-key:active {
+  background: var(--primary);
+  transform: scale(0.92);
+}
+
+.vk-space {
+  flex: 1;
+  max-width: 400px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2px;
+}
+
+.vk-special {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  min-width: 64px;
+}
+
+.vk-special:active {
+  background: rgba(247, 151, 30, 0.4);
+}
+
+.vk-active {
+  background: rgba(247, 151, 30, 0.25) !important;
+  color: var(--primary) !important;
+}
+
+.vk-caps-lock {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* Larger keys on wider screens */
+@media (min-width: 1400px) {
+  .vk-key {
+    min-width: 64px;
+    height: 56px;
+    font-size: 1.25rem;
+    gap: 6px;
+  }
+  .vk-row {
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .vk-special {
+    min-width: 80px;
+  }
+}

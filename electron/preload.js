@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('api', {
 
   // App
   toggleFullscreen: () => ipcRenderer.invoke('app:toggleFullscreen'),
+  quitApp: () => ipcRenderer.invoke('app:quit'),
   getAssetsPath: () => ipcRenderer.invoke('app:getAssetsPath'),
   getGalleryPath: () => ipcRenderer.invoke('app:getGalleryPath'),
 });

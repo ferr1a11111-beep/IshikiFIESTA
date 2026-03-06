@@ -10,9 +10,26 @@ export default function IdleScreen({ config, onStart }) {
   return (
     <div className="screen" onClick={onStart} onTouchStart={onStart}>
       <div className="screen-bg">
-        <div className="idle-bg-blob" />
-        <div className="idle-bg-blob" />
-        <div className="idle-bg-blob" />
+        {config.idleWallpaper ? (
+          <img
+            src={`file://${config.idleWallpaper.replace(/\\/g, '/')}`}
+            alt=""
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'brightness(0.4) blur(2px)',
+            }}
+          />
+        ) : (
+          <>
+            <div className="idle-bg-blob" />
+            <div className="idle-bg-blob" />
+            <div className="idle-bg-blob" />
+          </>
+        )}
       </div>
 
       <div className="screen-content" style={{

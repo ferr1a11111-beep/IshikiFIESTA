@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import VirtualKeyboard from '../components/VirtualKeyboard';
 
 function Toggle({ value, onChange }) {
   return (
@@ -16,19 +17,38 @@ export default function AdminScreen({ config, onSave, onClose }) {
   const [newPhrase, setNewPhrase] = useState('');
   const [customPhrases, setCustomPhrases] = useState(config.customPhrases || []);
   const [serverInfo, setServerInfo] = useState(null);
+  const [wallpaperPhotos, setWallpaperPhotos] = useState([]);
+  const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
+
+  // Virtual keyboard state
+  const [kbVisible, setKbVisible] = useState(false);
+  const [kbTarget, setKbTarget] = useState(null); // 'eventName' | 'newPhrase' | 'idleTimeout' | 'countdownSeconds'
+  const eventNameRef = useRef(null);
+  const newPhraseRef = useRef(null);
+  const idleTimeoutRef = useRef(null);
+  const countdownRef = useRef(null);
+
+  const inputRefs = {
+    eventName: eventNameRef,
+    newPhrase: newPhraseRef,
+    idleTimeout: idleTimeoutRef,
+    countdownSeconds: countdownRef,
+  };
 
   useEffect(() => {
     const load = async () => {
       if (!window.api) return;
       try {
-        const [printerList, eventStats, info] = await Promise.all([
+        const [printerList, eventStats, info, photos] = await Promise.all([
           window.api.listPrinters(),
           window.api.getStats(config.eventName),
           window.api.getServerInfo(),
+          window.api.getPhotos(config.eventName),
         ]);
         setPrinters(printerList);
         setStats(eventStats);
         setServerInfo(info);
+        setWallpaperPhotos(photos.filter(p => p.mode === 'photo' || p.mode === 'strip'));
       } catch (e) {
         console.error('Admin load error:', e);
       }
@@ -57,6 +77,43 @@ export default function AdminScreen({ config, onSave, onClose }) {
     setCustomPhrases(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Open virtual keyboard for a specific input
+  const openKeyboard = (targetName) => {
+    setKbTarget(targetName);
+    setKbVisible(true);
+  };
+
+  const closeKeyboard = () => {
+    setKbVisible(false);
+    setKbTarget(null);
+  };
+
+  // Handle virtual keyboard input
+  const handleKbInput = useCallback((value) => {
+    if (!kbTarget) return;
+    switch (kbTarget) {
+      case 'eventName':
+        update('eventName', value);
+        break;
+      case 'newPhrase':
+        setNewPhrase(value);
+        break;
+      case 'idleTimeout':
+        update('idleTimeout', parseInt(value) || 30);
+        break;
+      case 'countdownSeconds':
+        update('countdownSeconds', parseInt(value) || 3);
+        break;
+    }
+  }, [kbTarget]);
+
+  const handleKbEnter = useCallback(() => {
+    if (kbTarget === 'newPhrase') {
+      addPhrase();
+    }
+    closeKeyboard();
+  }, [kbTarget, newPhrase]);
+
   return (
     <div className="admin-container">
       {/* Header */}
@@ -75,7 +132,7 @@ export default function AdminScreen({ config, onSave, onClose }) {
       </div>
 
       {/* Body */}
-      <div className="admin-body">
+      <div className="admin-body" style={{ paddingBottom: kbVisible ? '320px' : '20px' }}>
         {/* Event */}
         <div className="admin-section">
           <div className="admin-section-title">🎉 Evento</div>
@@ -85,12 +142,25 @@ export default function AdminScreen({ config, onSave, onClose }) {
               <div className="admin-field-label">Nombre del evento</div>
               <div className="admin-field-desc">Se muestra en la pantalla idle y en las impresiones</div>
             </div>
-            <input
-              className="admin-input"
-              value={draft.eventName}
-              onChange={(e) => update('eventName', e.target.value)}
-              placeholder="Ej: Cumple de Greta"
-            />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                ref={eventNameRef}
+                className="admin-input"
+                value={draft.eventName}
+                onChange={(e) => update('eventName', e.target.value)}
+                placeholder="Ej: Cumple de Greta"
+                onFocus={() => openKeyboard('eventName')}
+                readOnly
+              />
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                onClick={() => openKeyboard('eventName')}
+                title="Abrir teclado"
+                style={{ minWidth: '48px', minHeight: '48px', fontSize: '1.3rem' }}
+              >
+                ⌨️
+              </button>
+            </div>
           </div>
 
           <div className="admin-field">
@@ -113,31 +183,120 @@ export default function AdminScreen({ config, onSave, onClose }) {
               <div className="admin-field-label">Timeout de inactividad (seg)</div>
               <div className="admin-field-desc">Segundos antes de volver a la pantalla idle</div>
             </div>
-            <input
-              className="admin-input"
-              type="number"
-              min="10"
-              max="120"
-              value={draft.idleTimeout}
-              onChange={(e) => update('idleTimeout', parseInt(e.target.value) || 30)}
-              style={{ width: '100px' }}
-            />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                ref={idleTimeoutRef}
+                className="admin-input"
+                type="text"
+                inputMode="numeric"
+                value={draft.idleTimeout}
+                onChange={(e) => update('idleTimeout', parseInt(e.target.value) || 30)}
+                style={{ width: '100px' }}
+                onFocus={() => openKeyboard('idleTimeout')}
+                readOnly
+              />
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                onClick={() => openKeyboard('idleTimeout')}
+                style={{ minWidth: '48px', minHeight: '48px', fontSize: '1.3rem' }}
+              >
+                ⌨️
+              </button>
+            </div>
           </div>
 
           <div className="admin-field">
             <div>
               <div className="admin-field-label">Cuenta regresiva (seg)</div>
             </div>
-            <input
-              className="admin-input"
-              type="number"
-              min="1"
-              max="10"
-              value={draft.countdownSeconds}
-              onChange={(e) => update('countdownSeconds', parseInt(e.target.value) || 3)}
-              style={{ width: '100px' }}
-            />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                ref={countdownRef}
+                className="admin-input"
+                type="text"
+                inputMode="numeric"
+                value={draft.countdownSeconds}
+                onChange={(e) => update('countdownSeconds', parseInt(e.target.value) || 3)}
+                style={{ width: '100px' }}
+                onFocus={() => openKeyboard('countdownSeconds')}
+                readOnly
+              />
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                onClick={() => openKeyboard('countdownSeconds')}
+                style={{ minWidth: '48px', minHeight: '48px', fontSize: '1.3rem' }}
+              >
+                ⌨️
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Wallpaper */}
+        <div className="admin-section">
+          <div className="admin-section-title">🖼️ Fondo de Pantalla</div>
+          <div className="admin-field">
+            <div>
+              <div className="admin-field-label">Foto de fondo</div>
+              <div className="admin-field-desc">Usa una foto de la galeria como fondo de la pantalla de inicio</div>
+            </div>
+            {draft.idleWallpaper ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <img
+                  src={`file://${draft.idleWallpaper.replace(/\\/g, '/')}`}
+                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
+                  alt=""
+                />
+                <button
+                  className="touch-btn touch-btn-ghost touch-btn-sm"
+                  onClick={() => update('idleWallpaper', '')}
+                  style={{ padding: '8px 12px', minHeight: 'auto' }}
+                >
+                  ✕ Quitar
+                </button>
+              </div>
+            ) : (
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Gradientes animados</span>
+            )}
+          </div>
+          <button
+            className="touch-btn touch-btn-glass touch-btn-sm"
+            style={{ marginTop: '12px', width: '100%' }}
+            onClick={() => setShowWallpaperPicker(!showWallpaperPicker)}
+          >
+            📷 {showWallpaperPicker ? 'Cerrar galeria' : 'Seleccionar foto'}
+          </button>
+          {showWallpaperPicker && (
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              padding: '12px 0',
+              WebkitOverflowScrolling: 'touch',
+            }}>
+              {wallpaperPhotos.length > 0 ? wallpaperPhotos.map(p => (
+                <img
+                  key={p.filename}
+                  src={`file://${p.path.replace(/\\/g, '/')}`}
+                  style={{
+                    width: 100,
+                    height: 75,
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    border: draft.idleWallpaper === p.path ? '3px solid var(--primary)' : '3px solid transparent',
+                    flexShrink: 0,
+                  }}
+                  alt=""
+                  onClick={() => { update('idleWallpaper', p.path); setShowWallpaperPicker(false); }}
+                />
+              )) : (
+                <div style={{ color: 'var(--text-muted)', padding: '16px', fontSize: '0.9rem' }}>
+                  No hay fotos aun. Saca fotos primero para usarlas de fondo.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Features */}
@@ -260,13 +419,22 @@ export default function AdminScreen({ config, onSave, onClose }) {
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <input
+                ref={newPhraseRef}
                 className="admin-input"
                 value={newPhrase}
                 onChange={(e) => setNewPhrase(e.target.value)}
                 placeholder="Escribi una frase..."
                 style={{ flex: 1 }}
-                onKeyDown={(e) => e.key === 'Enter' && addPhrase()}
+                onFocus={() => openKeyboard('newPhrase')}
+                readOnly
               />
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                onClick={() => openKeyboard('newPhrase')}
+                style={{ minWidth: '48px', minHeight: '48px', fontSize: '1.3rem' }}
+              >
+                ⌨️
+              </button>
               <button className="touch-btn touch-btn-primary touch-btn-sm" onClick={addPhrase}>
                 + Agregar
               </button>
@@ -331,6 +499,33 @@ export default function AdminScreen({ config, onSave, onClose }) {
           </div>
         )}
 
+        {/* Quit App */}
+        <div className="admin-section">
+          <div className="admin-section-title">🚪 Salir de la Aplicacion</div>
+          <div className="admin-field-desc" style={{ marginBottom: '12px' }}>
+            Cierra IshikiFIESTA completamente (sale del modo kiosko)
+          </div>
+          <button
+            className="touch-btn touch-btn-sm"
+            style={{
+              width: '100%',
+              background: 'var(--danger)',
+              color: '#fff',
+              fontSize: '1.1rem',
+              padding: '16px',
+            }}
+            onClick={() => {
+              if (window.api && window.api.quitApp) {
+                window.api.quitApp();
+              } else {
+                window.close();
+              }
+            }}
+          >
+            ⏻ Cerrar IshikiFIESTA
+          </button>
+        </div>
+
         {/* Version */}
         <div style={{
           textAlign: 'center',
@@ -341,6 +536,15 @@ export default function AdminScreen({ config, onSave, onClose }) {
           IshikiFIESTA v3.0 — Photo Booth Profesional
         </div>
       </div>
+
+      {/* Virtual Keyboard */}
+      <VirtualKeyboard
+        targetRef={kbTarget ? inputRefs[kbTarget] : null}
+        onInput={handleKbInput}
+        onEnter={handleKbEnter}
+        onClose={closeKeyboard}
+        visible={kbVisible}
+      />
     </div>
   );
 }

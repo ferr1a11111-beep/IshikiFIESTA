@@ -59,6 +59,7 @@ function loadConfig() {
     photoPrinterName: '',
     theme: 'fiesta',
     customPhrases: [],
+    idleWallpaper: '',
   };
   try {
     if (fs.existsSync(CONFIG_FILE)) {
@@ -160,6 +161,10 @@ function setupIPC() {
     if (mainWindow) {
       mainWindow.setFullScreen(!mainWindow.isFullScreen());
     }
+  });
+  ipcMain.handle('app:quit', () => {
+    if (shareServer) shareServer.stop();
+    app.quit();
   });
   ipcMain.handle('app:getAssetsPath', () => ASSETS_DIR);
   ipcMain.handle('app:getGalleryPath', () => GALLERY_DIR);

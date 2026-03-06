@@ -59,6 +59,7 @@ export default function App() {
           photoPrinterName: '',
           theme: 'fiesta',
           customPhrases: [],
+          idleWallpaper: '',
         });
       }
     };

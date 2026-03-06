@@ -16,5 +16,9 @@ snapfiesta-v2.0/
 gallery/
 config/
 
+# USB deploy folder (binaries)
+USB-IshikiFIESTA/
+nul
+
 # Claude config
 .claude/

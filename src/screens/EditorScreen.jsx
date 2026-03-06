@@ -29,15 +29,207 @@ const STICKERS = [
 ];
 
 const FRAMES = [
-  { id: 'none', name: 'Sin marco', color: 'transparent' },
-  { id: 'white', name: 'Blanco clasico', color: '#ffffff' },
-  { id: 'black', name: 'Negro elegante', color: '#1a1a1a' },
-  { id: 'gold', name: 'Dorado', color: '#f7971e' },
-  { id: 'pink', name: 'Rosa fiesta', color: '#ff6b9d' },
-  { id: 'neon_blue', name: 'Neon azul', color: '#00d4ff' },
-  { id: 'neon_green', name: 'Neon verde', color: '#39ff14' },
-  { id: 'purple', name: 'Violeta', color: '#a855f7' },
+  { id: 'none', name: 'Sin marco', type: 'none' },
+  { id: 'classic_white', name: 'Clasico Blanco', type: 'solid', color: '#ffffff', textColor: '#333' },
+  { id: 'elegant_black', name: 'Negro Elegante', type: 'solid', color: '#1a1a1a', textColor: '#fff' },
+  { id: 'gold_luxe', name: 'Oro Lujoso', type: 'gradient',
+    colors: ['#b8860b', '#ffd700', '#daa520', '#ffd700', '#b8860b'], textColor: '#1a1a1a' },
+  { id: 'rose_gold', name: 'Oro Rosa', type: 'gradient',
+    colors: ['#b76e79', '#f0c0c0', '#e8a0a0', '#f0c0c0', '#b76e79'], textColor: '#fff' },
+  { id: 'neon_party', name: 'Neon Fiesta', type: 'neon',
+    color: '#ff00ff', glowColor: 'rgba(255,0,255,0.6)', textColor: '#fff' },
+  { id: 'rainbow', name: 'Arcoiris', type: 'rainbow', textColor: '#fff' },
+  { id: 'glitter_pink', name: 'Glitter Rosa', type: 'glitter',
+    baseColor: '#ff69b4', sparkleColor: '#fff', textColor: '#fff' },
+  { id: 'fiesta_confetti', name: 'Confetti', type: 'confetti',
+    baseColor: '#2c003e', textColor: '#ffd700' },
+  { id: 'vintage_film', name: 'Pelicula Retro', type: 'filmstrip',
+    color: '#1a1a1a', textColor: '#fff' },
 ];
+
+// Draw glamorous frame on canvas for final composition
+function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
+  const frame = FRAMES.find(f => f.id === frameId);
+  if (!frame || frame.type === 'none') return;
+
+  switch (frame.type) {
+    case 'solid':
+      ctx.fillStyle = frame.color;
+      ctx.fillRect(0, 0, w, h);
+      break;
+
+    case 'gradient': {
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      frame.colors.forEach((c, i) => grad.addColorStop(i / (frame.colors.length - 1), c));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      // Shimmer diagonal lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < w + h; i += 8) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(0, i);
+        ctx.stroke();
+      }
+      break;
+    }
+
+    case 'neon': {
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0, 0, w, h);
+      ctx.save();
+      ctx.shadowColor = frame.glowColor;
+      ctx.shadowBlur = 20;
+      ctx.strokeStyle = frame.color;
+      ctx.lineWidth = 4;
+      ctx.strokeRect(fw * 0.3, fw * 0.3, w - fw * 0.6, h - fw * 0.6);
+      ctx.shadowBlur = 10;
+      ctx.strokeRect(fw * 0.3, fw * 0.3, w - fw * 0.6, h - fw * 0.6);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(fw - 2, fw - 2, w - fw * 2 + 4, h - fw * 2 + 4);
+      break;
+    }
+
+    case 'rainbow': {
+      const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      colors.forEach((c, i) => grad.addColorStop(i / (colors.length - 1), c));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      break;
+    }
+
+    case 'glitter': {
+      ctx.fillStyle = frame.baseColor;
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 400; i++) {
+        const px = ((42 * (i + 1) * 7919) % w);
+        const py = ((42 * (i + 1) * 104729) % h);
+        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
+        const size = 1 + (i % 3);
+        ctx.fillStyle = `rgba(255,255,255,${0.3 + (i % 5) * 0.14})`;
+        ctx.beginPath();
+        ctx.arc(px, py, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
+
+    case 'confetti': {
+      ctx.fillStyle = frame.baseColor;
+      ctx.fillRect(0, 0, w, h);
+      const confettiColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#a855f7'];
+      for (let i = 0; i < 100; i++) {
+        const px = ((i * 7919 + 31) % w);
+        const py = ((i * 104729 + 31) % h);
+        if (px > fw && px < w - fw && py > fw && py < h - fw) continue;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate((i * 0.5) % (Math.PI * 2));
+        ctx.fillStyle = confettiColors[i % confettiColors.length];
+        ctx.fillRect(-4, -8, 8, 16);
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'filmstrip': {
+      ctx.fillStyle = frame.color;
+      ctx.fillRect(0, 0, w, h);
+      const holeSize = fw * 0.35;
+      const spacing = holeSize * 2.5;
+      ctx.fillStyle = '#333';
+      for (let x = spacing; x < w - spacing; x += spacing) {
+        ctx.beginPath();
+        ctx.rect(x - holeSize / 2, fw * 0.15, holeSize, holeSize);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.rect(x - holeSize / 2, h - fw * 0.15 - holeSize, holeSize, holeSize);
+        ctx.fill();
+      }
+      break;
+    }
+  }
+
+  // Event name at bottom
+  if (fw > 20) {
+    ctx.save();
+    ctx.fillStyle = frame.textColor || '#fff';
+    ctx.font = `bold ${Math.round(fw * 0.55)}px "Fredoka", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(eventName, w / 2, h - fw * 0.3);
+    ctx.restore();
+  }
+}
+
+// CSS preview style for frame during editing
+function getFramePreviewStyle(frameId) {
+  const frame = FRAMES.find(f => f.id === frameId);
+  if (!frame) return {};
+  switch (frame.type) {
+    case 'solid':
+      return { border: `24px solid ${frame.color}` };
+    case 'gradient':
+      return {
+        border: '24px solid transparent',
+        backgroundImage: `linear-gradient(135deg, ${frame.colors.join(', ')})`,
+        backgroundOrigin: 'border-box',
+        backgroundClip: 'border-box',
+      };
+    case 'neon':
+      return {
+        border: '24px solid #0a0a1a',
+        boxShadow: `inset 0 0 15px ${frame.glowColor}, 0 0 15px ${frame.glowColor}`,
+      };
+    case 'rainbow':
+      return {
+        border: '24px solid transparent',
+        backgroundImage: 'linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f)',
+        backgroundOrigin: 'border-box',
+        backgroundClip: 'border-box',
+      };
+    case 'glitter':
+      return {
+        border: `24px solid ${frame.baseColor}`,
+        boxShadow: 'inset 0 0 20px rgba(255,255,255,0.2)',
+      };
+    case 'confetti':
+      return { border: `24px solid ${frame.baseColor}` };
+    case 'filmstrip':
+      return { border: `24px solid ${frame.color}` };
+    default:
+      return {};
+  }
+}
+
+// Thumbnail background for frame selector
+function getFrameThumbStyle(frame) {
+  switch (frame.type) {
+    case 'none':
+      return { background: 'var(--glass)' };
+    case 'solid':
+      return { background: frame.color };
+    case 'gradient':
+      return { background: `linear-gradient(135deg, ${frame.colors.join(', ')})` };
+    case 'neon':
+      return { background: '#0a0a1a', boxShadow: `inset 0 0 10px ${frame.glowColor}, 0 0 8px ${frame.glowColor}` };
+    case 'rainbow':
+      return { background: 'linear-gradient(90deg, #f00, #ff8800, #ff0, #0f0, #00f, #80f)' };
+    case 'glitter':
+      return { background: `linear-gradient(135deg, ${frame.baseColor}, #fff, ${frame.baseColor})` };
+    case 'confetti':
+      return { background: frame.baseColor };
+    case 'filmstrip':
+      return { background: frame.color };
+    default:
+      return { background: 'var(--glass)' };
+  }
+}
 
 export default function EditorScreen({ config, image, frames: capturedFrames, mode, onDone, onRetake }) {
   const [activeTab, setActiveTab] = useState('filters');
@@ -52,6 +244,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
 
   // Drag state for stickers
   const [dragging, setDragging] = useState(null); // { index, startX, startY }
+  const [selectedSticker, setSelectedSticker] = useState(null); // index or null
 
   // Generate filter thumbnails
   useEffect(() => {
@@ -138,6 +331,16 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
 
   const removeSticker = (index) => {
     setPlacedStickers(prev => prev.filter((_, i) => i !== index));
+    if (selectedSticker === index) setSelectedSticker(null);
+  };
+
+  const resizeSticker = (index, delta) => {
+    setPlacedStickers(prev => {
+      const copy = [...prev];
+      const newSize = Math.max(20, Math.min(200, copy[index].size + delta));
+      copy[index] = { ...copy[index], size: newSize };
+      return copy;
+    });
   };
 
   // Compose final image with filter + frame + stickers
@@ -151,28 +354,14 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
       });
 
       const canvas = document.createElement('canvas');
-      const frameWidth = selectedFrame !== 'none' ? 40 : 0;
+      const frameWidth = selectedFrame !== 'none' ? 50 : 0;
       canvas.width = img.width + frameWidth * 2;
       canvas.height = img.height + frameWidth * 2;
       const ctx = canvas.getContext('2d');
 
-      // Draw frame background
+      // Draw glamorous frame
       if (selectedFrame !== 'none') {
-        const frame = FRAMES.find(f => f.id === selectedFrame);
-        ctx.fillStyle = frame ? frame.color : '#fff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Event branding at bottom of frame
-        if (frameWidth > 20) {
-          ctx.fillStyle = selectedFrame === 'white' ? '#333' : '#fff';
-          ctx.font = `bold ${Math.round(frameWidth * 0.6)}px "Fredoka", sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText(
-            config.eventName,
-            canvas.width / 2,
-            canvas.height - frameWidth * 0.3
-          );
-        }
+        drawFrameOnCanvas(ctx, selectedFrame, canvas.width, canvas.height, frameWidth, config.eventName);
       }
 
       // Draw filtered image
@@ -204,29 +393,31 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
   return (
     <div className="editor-container">
       {/* Preview area */}
-      <div className="editor-preview" ref={previewRef}>
+      <div className="editor-preview" ref={previewRef} onClick={() => setSelectedSticker(null)}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
           {/* Frame */}
           {selectedFrame !== 'none' && (
             <div style={{
               position: 'absolute',
-              inset: '-20px',
-              border: `20px solid ${frameObj?.color || '#fff'}`,
+              inset: '-24px',
               borderRadius: 'calc(var(--radius) + 4px)',
               pointerEvents: 'none',
               zIndex: 1,
+              overflow: 'hidden',
+              ...getFramePreviewStyle(selectedFrame),
             }}>
               {/* Event name on frame */}
               <div style={{
                 position: 'absolute',
-                bottom: '-16px',
+                bottom: '-18px',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 fontSize: '0.7rem',
                 fontWeight: 700,
                 fontFamily: 'var(--font-display)',
-                color: selectedFrame === 'white' ? '#333' : '#fff',
+                color: frameObj?.textColor || '#fff',
                 whiteSpace: 'nowrap',
+                textShadow: '0 1px 4px rgba(0,0,0,0.5)',
               }}>
                 {config.eventName}
               </div>
@@ -238,8 +429,6 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
             src={filteredImage || image}
             alt="Preview"
             style={{
-              maxWidth: mode === 'strip' ? '400px' : '700px',
-              maxHeight: '75vh',
               borderRadius: 'var(--radius)',
               boxShadow: 'var(--shadow)',
               display: 'block',
@@ -259,12 +448,67 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                 cursor: 'grab',
                 zIndex: 5,
                 lineHeight: 1,
+                outline: selectedSticker === i ? '2px dashed var(--primary)' : 'none',
+                outlineOffset: '4px',
+                borderRadius: '8px',
               }}
-              onMouseDown={(e) => handleStickerStart(e, i)}
-              onTouchStart={(e) => handleStickerStart(e, i)}
+              onMouseDown={(e) => { e.stopPropagation(); handleStickerStart(e, i); setSelectedSticker(i); }}
+              onTouchStart={(e) => { handleStickerStart(e, i); setSelectedSticker(i); }}
               onDoubleClick={() => removeSticker(i)}
             >
               {s.emoji}
+              {/* Resize controls */}
+              {selectedSticker === i && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-44px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: '6px',
+                    zIndex: 10,
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                >
+                  <button
+                    style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)',
+                      color: '#fff', fontSize: '1.3rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backdropFilter: 'blur(8px)',
+                    }}
+                    onClick={(e) => { e.stopPropagation(); resizeSticker(i, -15); }}
+                  >
+                    −
+                  </button>
+                  <button
+                    style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)',
+                      color: '#fff', fontSize: '1.3rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backdropFilter: 'blur(8px)',
+                    }}
+                    onClick={(e) => { e.stopPropagation(); resizeSticker(i, 15); }}
+                  >
+                    +
+                  </button>
+                  <button
+                    style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'rgba(231,76,60,0.85)', border: 'none',
+                      color: '#fff', fontSize: '1rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                    onClick={(e) => { e.stopPropagation(); removeSticker(i); }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -323,17 +567,17 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                   <div
                     className="filter-thumb"
                     style={{
-                      background: f.id === 'none' ? 'var(--glass)' : f.color,
-                      border: '2px solid var(--glass-border)',
+                      ...getFrameThumbStyle(f),
+                      border: f.type === 'neon' ? `2px solid ${f.color}` : '2px solid var(--glass-border)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: f.id === 'none' ? '1.5rem' : '0.8rem',
-                      color: ['white', 'gold', 'neon_green'].includes(f.id) ? '#333' : '#fff',
+                      fontSize: f.type === 'none' ? '1.5rem' : '0.8rem',
+                      color: f.textColor || '#fff',
                       fontWeight: 600,
                     }}
                   >
-                    {f.id === 'none' ? '✕' : 'Aa'}
+                    {f.type === 'none' ? '✕' : 'Aa'}
                   </div>
                   <span className="filter-name">{f.name}</span>
                 </div>
@@ -350,7 +594,7 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                 marginBottom: '12px',
                 textAlign: 'center',
               }}>
-                Toca para agregar. Arrastra para mover. Doble tap para borrar.
+                Toca para agregar. Arrastra para mover. Usa +/− para cambiar tamano. Doble tap para borrar.
               </p>
               <div className="sticker-grid">
                 {STICKERS.map(s => (

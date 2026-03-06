@@ -30,7 +30,8 @@
       "output": "dist"
     },
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "signAndEditExecutable": false
     },
     "portable": {
       "artifactName": "IshikiFIESTA.exe"
