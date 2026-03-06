@@ -385,7 +385,7 @@ function drawFrameOnCanvas(ctx, frameId, w, h, fw, eventName) {
   }
 }
 
-// Draw protruding cartoon elements ON TOP of the image - party style!
+// Draw protruding cartoon elements ON TOP of the image - party style! BIG & FUN!
 function drawFrameOverlays(ctx, frameId, w, h, fw) {
   const frame = FRAMES.find(f => f.id === frameId);
   if (!frame || frame.type === 'none' || frame.type === 'solid' || frame.type === 'filmstrip') return;
@@ -394,148 +394,189 @@ function drawFrameOverlays(ctx, frameId, w, h, fw) {
 
   switch (frame.type) {
     case 'fiesta': {
-      const sz = fw * 3.5;
-      // Party hats at corners
-      drawPartyHat(ctx, fw * 1.5, fw * 1.8, sz, '#ff4444', '#ffdd00');
-      drawPartyHat(ctx, w - fw * 1.5, fw * 1.8, sz * 0.85, '#4488ff', '#ffffff');
-      drawPartyHat(ctx, fw * 1.8, h - fw * 1.5, sz * 0.75, '#44dd44', '#ff69b4');
-      drawPartyHat(ctx, w - fw * 1.8, h - fw * 1.5, sz * 0.8, '#ff69b4', '#ffdd00');
-      // Lollipops at mid-edges
-      drawLollipop(ctx, w / 2, fw * 0.6, sz * 0.7, '#ff69b4', '#ffffff');
-      drawLollipop(ctx, w / 2, h - fw * 0.4, sz * 0.6, '#44dd44', '#ffdd00');
-      drawLollipop(ctx, fw * 0.6, h / 2, sz * 0.6, '#ffdd00', '#ff4444');
-      drawLollipop(ctx, w - fw * 0.6, h / 2, sz * 0.6, '#4488ff', '#ffffff');
-      // Small stars scattered along edges
-      for (let i = 0; i < 8; i++) {
+      const sz = fw * 5.5;
+      // BIG party hats at corners
+      drawPartyHat(ctx, fw * 2.0, fw * 2.5, sz, '#ff4444', '#ffdd00');
+      drawPartyHat(ctx, w - fw * 2.0, fw * 2.5, sz * 0.9, '#4488ff', '#ffffff');
+      drawPartyHat(ctx, fw * 2.2, h - fw * 2.0, sz * 0.85, '#44dd44', '#ff69b4');
+      drawPartyHat(ctx, w - fw * 2.2, h - fw * 2.0, sz * 0.9, '#ff69b4', '#ffdd00');
+      // Lollipops at mid-edges - bigger
+      drawLollipop(ctx, w * 0.3, fw * 0.5, sz * 0.65, '#ff69b4', '#ffffff');
+      drawLollipop(ctx, w * 0.7, fw * 0.5, sz * 0.55, '#44dd44', '#ffdd00');
+      drawLollipop(ctx, w * 0.35, h - fw * 0.3, sz * 0.6, '#aa44ff', '#ffdd00');
+      drawLollipop(ctx, w * 0.65, h - fw * 0.3, sz * 0.55, '#ff8800', '#ffffff');
+      drawLollipop(ctx, fw * 0.5, h * 0.35, sz * 0.55, '#ffdd00', '#ff4444');
+      drawLollipop(ctx, w - fw * 0.5, h * 0.65, sz * 0.55, '#4488ff', '#ffffff');
+      // Gifts between corners
+      drawGift(ctx, fw * 0.5, h * 0.6, sz * 0.5, '#ff4444', '#ffdd00');
+      drawGift(ctx, w - fw * 0.5, h * 0.4, sz * 0.5, '#4488ff', '#ffffff');
+      // Stars scattered along edges
+      for (let i = 0; i < 12; i++) {
         const sx = fw + ((i * 1733 + 11) % (w - fw * 2));
-        const sy = i < 4 ? fw * 0.3 : h - fw * 0.3;
-        drawStar5(ctx, sx, sy, fw * 0.5, fw * 0.2, '#ffd700');
+        const sy = i < 6 ? fw * 0.3 : h - fw * 0.3;
+        drawStar5(ctx, sx, sy, fw * 0.7, fw * 0.28, '#ffd700');
       }
       break;
     }
 
     case 'balloons': {
       const bColors = ['#ff4444', '#4488ff', '#ffdd00', '#44dd44', '#ff69b4', '#ff8800', '#aa44ff'];
-      const bigR = fw * 3.9;
-      // Large balloons at corners
-      drawBalloon(ctx, fw * 1.2, fw * 0.8, bigR, bColors[0]);
-      drawBalloon(ctx, fw * 3.0, fw * 0.3, bigR * 0.7, bColors[1]);
-      drawBalloon(ctx, w - fw * 1.2, fw * 0.8, bigR, bColors[3]);
-      drawBalloon(ctx, w - fw * 3.0, fw * 0.3, bigR * 0.7, bColors[4]);
-      drawBalloon(ctx, fw * 1.5, h - fw * 1.2, bigR * 0.85, bColors[5]);
-      drawBalloon(ctx, w - fw * 1.5, h - fw * 1.2, bigR * 0.85, bColors[6]);
-      // Small confetti
-      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4'];
-      for (let i = 0; i < 30; i++) {
+      const bigR = fw * 5.5;
+      // Large balloons at corners and along top/bottom
+      drawBalloon(ctx, fw * 1.5, fw * 0.5, bigR, bColors[0]);
+      drawBalloon(ctx, fw * 4.0, fw * 0.2, bigR * 0.75, bColors[1]);
+      drawBalloon(ctx, w - fw * 1.5, fw * 0.5, bigR, bColors[3]);
+      drawBalloon(ctx, w - fw * 4.0, fw * 0.2, bigR * 0.75, bColors[4]);
+      drawBalloon(ctx, w / 2, fw * 0.3, bigR * 0.65, bColors[2]);
+      // Bottom balloons
+      drawBalloon(ctx, fw * 2.0, h - fw * 1.0, bigR * 0.9, bColors[5]);
+      drawBalloon(ctx, w - fw * 2.0, h - fw * 1.0, bigR * 0.9, bColors[6]);
+      drawBalloon(ctx, w / 2, h - fw * 0.8, bigR * 0.6, bColors[0]);
+      // Side balloons
+      drawBalloon(ctx, fw * 0.5, h * 0.4, bigR * 0.7, bColors[2]);
+      drawBalloon(ctx, w - fw * 0.5, h * 0.6, bigR * 0.7, bColors[5]);
+      // Confetti pieces - bigger and more
+      const cColors = ['#ff6b6b', '#ffd700', '#00d4ff', '#39ff14', '#ff69b4', '#ff8800', '#aa44ff'];
+      for (let i = 0; i < 50; i++) {
         const cx = ((i * 2731 + 17) % w);
         const cy = ((i * 3571 + 23) % h);
         ctx.save();
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = 0.75;
         ctx.fillStyle = cColors[i % cColors.length];
         ctx.translate(cx, cy); ctx.rotate(i * 0.6);
-        ctx.fillRect(-3, -6, 6, 12);
+        ctx.fillRect(-4, -8, 8, 16);
         ctx.restore();
       }
       break;
     }
 
     case 'candy': {
-      const sz = fw * 3.2;
-      // Cupcakes at corners
-      drawCupcake(ctx, fw * 2, fw * 2.2, sz, '#DEB887', '#ff69b4');
-      drawCupcake(ctx, w - fw * 2, fw * 2.2, sz * 0.85, '#DEB887', '#87CEEB');
-      drawCupcake(ctx, fw * 2.5, h - fw * 1.8, sz * 0.75, '#DEB887', '#ff4444');
-      drawCupcake(ctx, w - fw * 2.5, h - fw * 1.8, sz * 0.75, '#DEB887', '#aa44ff');
-      // Lollipops at top/bottom mid
-      drawLollipop(ctx, w / 2, fw * 0.8, sz * 0.8, '#ff4444', '#ffffff');
-      drawLollipop(ctx, w / 2, h - fw * 0.5, sz * 0.65, '#44dd44', '#ffdd00');
-      // Candy at sides
-      drawCandy(ctx, fw * 1.0, h / 2, sz * 0.8, '#ff69b4', '#ffffff');
-      drawCandy(ctx, w - fw * 1.0, h / 2, sz * 0.8, '#4488ff', '#ffdd00');
-      // Small stars
-      for (let i = 0; i < 6; i++) {
+      const sz = fw * 5;
+      // BIG cupcakes at corners
+      drawCupcake(ctx, fw * 2.5, fw * 2.8, sz, '#DEB887', '#ff69b4');
+      drawCupcake(ctx, w - fw * 2.5, fw * 2.8, sz * 0.9, '#DEB887', '#87CEEB');
+      drawCupcake(ctx, fw * 3.0, h - fw * 2.2, sz * 0.85, '#DEB887', '#ff4444');
+      drawCupcake(ctx, w - fw * 3.0, h - fw * 2.2, sz * 0.85, '#DEB887', '#aa44ff');
+      // BIG lollipops at top/bottom mid
+      drawLollipop(ctx, w * 0.35, fw * 0.5, sz * 0.75, '#ff4444', '#ffffff');
+      drawLollipop(ctx, w * 0.65, fw * 0.5, sz * 0.7, '#44dd44', '#ffdd00');
+      drawLollipop(ctx, w / 2, h - fw * 0.3, sz * 0.7, '#aa44ff', '#ffffff');
+      // BIG candy at sides
+      drawCandy(ctx, fw * 1.0, h * 0.35, sz * 0.9, '#ff69b4', '#ffffff');
+      drawCandy(ctx, fw * 1.0, h * 0.65, sz * 0.8, '#44dd44', '#ffdd00');
+      drawCandy(ctx, w - fw * 1.0, h * 0.35, sz * 0.8, '#4488ff', '#ffdd00');
+      drawCandy(ctx, w - fw * 1.0, h * 0.65, sz * 0.9, '#ff8800', '#ffffff');
+      // Stars
+      for (let i = 0; i < 10; i++) {
         const sx = fw + ((i * 2311 + 7) % (w - fw * 2));
-        const sy = i < 3 ? fw * 0.3 : h - fw * 0.3;
-        drawStar5(ctx, sx, sy, fw * 0.4, fw * 0.16, '#ffd700');
+        const sy = i < 5 ? fw * 0.25 : h - fw * 0.25;
+        drawStar5(ctx, sx, sy, fw * 0.6, fw * 0.24, '#ffd700');
       }
       break;
     }
 
     case 'hearts': {
       const hColors = ['#ff1744', '#e91e63', '#f44336', '#ff4081', '#c71585'];
-      const bigS = fw * 3.3;
-      // Large hearts at corners
-      drawHeart(ctx, fw * 1.2, fw * 1.2, bigS, hColors[0]);
-      drawHeart(ctx, w - fw * 1.2, fw * 1.2, bigS * 0.9, hColors[1]);
-      drawHeart(ctx, fw * 1.2, h - fw * 1.2, bigS * 0.85, hColors[2]);
-      drawHeart(ctx, w - fw * 1.2, h - fw * 1.2, bigS * 0.9, hColors[3]);
-      // Mid-edge hearts
-      drawHeart(ctx, w / 2, fw * 0.5, bigS * 0.5, hColors[4]);
-      drawHeart(ctx, w / 2, h - fw * 0.5, bigS * 0.5, hColors[0]);
-      drawHeart(ctx, fw * 0.5, h / 2, bigS * 0.45, hColors[1]);
-      drawHeart(ctx, w - fw * 0.5, h / 2, bigS * 0.45, hColors[2]);
+      const bigS = fw * 5;
+      // HUGE hearts at corners
+      drawHeart(ctx, fw * 1.5, fw * 1.5, bigS, hColors[0]);
+      drawHeart(ctx, w - fw * 1.5, fw * 1.5, bigS * 0.9, hColors[1]);
+      drawHeart(ctx, fw * 1.5, h - fw * 1.5, bigS * 0.85, hColors[2]);
+      drawHeart(ctx, w - fw * 1.5, h - fw * 1.5, bigS * 0.9, hColors[3]);
+      // Mid-edge hearts - bigger
+      drawHeart(ctx, w * 0.3, fw * 0.5, bigS * 0.5, hColors[4]);
+      drawHeart(ctx, w * 0.7, fw * 0.5, bigS * 0.45, hColors[0]);
+      drawHeart(ctx, w * 0.4, h - fw * 0.5, bigS * 0.5, hColors[1]);
+      drawHeart(ctx, w * 0.6, h - fw * 0.5, bigS * 0.45, hColors[3]);
+      drawHeart(ctx, fw * 0.5, h * 0.35, bigS * 0.4, hColors[2]);
+      drawHeart(ctx, fw * 0.5, h * 0.65, bigS * 0.4, hColors[4]);
+      drawHeart(ctx, w - fw * 0.5, h * 0.35, bigS * 0.4, hColors[0]);
+      drawHeart(ctx, w - fw * 0.5, h * 0.65, bigS * 0.4, hColors[1]);
       break;
     }
 
     case 'stars': {
-      const goldA = '#ffd700', goldB = '#ffed85';
-      const bigR = fw * 2.55, bigIR = bigR * 0.4;
-      // Large corner stars
-      drawStar5(ctx, fw * 1.2, fw * 1.2, bigR, bigIR, goldA);
-      drawStar5(ctx, w - fw * 1.2, fw * 1.2, bigR * 0.9, bigIR * 0.9, goldB);
-      drawStar5(ctx, fw * 1.2, h - fw * 1.2, bigR * 0.85, bigIR * 0.85, goldB);
-      drawStar5(ctx, w - fw * 1.2, h - fw * 1.2, bigR * 0.95, bigIR * 0.95, goldA);
-      // Mid-edge stars
-      drawStar5(ctx, w / 2, fw * 0.5, bigR * 0.65, bigIR * 0.65, goldA);
-      drawStar5(ctx, w / 2, h - fw * 0.5, bigR * 0.65, bigIR * 0.65, goldB);
-      drawStar5(ctx, fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldA);
-      drawStar5(ctx, w - fw * 0.5, h / 2, bigR * 0.5, bigIR * 0.5, goldB);
+      const goldA = '#ffd700', goldB = '#ffed85', silv = '#c0c0c0';
+      const bigR = fw * 4, bigIR = bigR * 0.4;
+      // HUGE corner stars
+      drawStar5(ctx, fw * 1.5, fw * 1.5, bigR, bigIR, goldA);
+      drawStar5(ctx, w - fw * 1.5, fw * 1.5, bigR * 0.9, bigIR * 0.9, goldB);
+      drawStar5(ctx, fw * 1.5, h - fw * 1.5, bigR * 0.9, bigIR * 0.9, goldB);
+      drawStar5(ctx, w - fw * 1.5, h - fw * 1.5, bigR, bigIR, goldA);
+      // Mid-edge stars - bigger
+      drawStar5(ctx, w * 0.3, fw * 0.4, bigR * 0.6, bigIR * 0.6, goldA);
+      drawStar5(ctx, w * 0.7, fw * 0.4, bigR * 0.55, bigIR * 0.55, silv);
+      drawStar5(ctx, w / 2, h - fw * 0.4, bigR * 0.6, bigIR * 0.6, goldB);
+      drawStar5(ctx, fw * 0.5, h * 0.35, bigR * 0.5, bigIR * 0.5, goldA);
+      drawStar5(ctx, fw * 0.5, h * 0.65, bigR * 0.45, bigIR * 0.45, silv);
+      drawStar5(ctx, w - fw * 0.5, h * 0.35, bigR * 0.5, bigIR * 0.5, goldB);
+      drawStar5(ctx, w - fw * 0.5, h * 0.65, bigR * 0.45, bigIR * 0.45, goldA);
+      // Sparkle dots
+      ctx.fillStyle = 'rgba(255,215,0,0.6)';
+      for (let i = 0; i < 20; i++) {
+        const sx = ((i * 7919 + 31) % w);
+        const sy = ((i * 104729 + 31) % h);
+        ctx.beginPath(); ctx.arc(sx, sy, 2 + (i % 3), 0, Math.PI * 2); ctx.fill();
+      }
       break;
     }
 
     case 'rainbow': {
-      // Large colorful circles/blobs at corners (like reference images)
-      const circleR = fw * 3;
+      // Large colorful circles/blobs at corners - BIGGER
+      const circleR = fw * 4.5;
       const colors = ['#ff0000', '#ff8800', '#ffff00', '#00cc00', '#0088ff', '#8800ff', '#ff00ff'];
       const cornerPositions = [[fw * 0.5, fw * 0.5], [w - fw * 0.5, fw * 0.5], [fw * 0.5, h - fw * 0.5], [w - fw * 0.5, h - fw * 0.5]];
       for (let ci = 0; ci < cornerPositions.length; ci++) {
         const [cx, cy] = cornerPositions[ci];
-        for (let j = 0; j < 3; j++) {
-          const offX = ((ci * 3 + j) * 37 % 7 - 3) * fw * 0.4;
-          const offY = ((ci * 3 + j) * 41 % 7 - 3) * fw * 0.4;
-          ctx.fillStyle = colors[(ci * 3 + j) % colors.length];
+        for (let j = 0; j < 4; j++) {
+          const offX = ((ci * 3 + j) * 37 % 9 - 4) * fw * 0.5;
+          const offY = ((ci * 3 + j) * 41 % 9 - 4) * fw * 0.5;
+          ctx.fillStyle = colors[(ci * 4 + j) % colors.length];
           ctx.globalAlpha = 0.85;
           ctx.beginPath();
-          ctx.arc(cx + offX, cy + offY, circleR * (0.5 + (j % 3) * 0.2), 0, Math.PI * 2);
+          ctx.arc(cx + offX, cy + offY, circleR * (0.5 + (j % 4) * 0.15), 0, Math.PI * 2);
           ctx.fill();
         }
+      }
+      // Mid-edge blobs
+      for (let i = 0; i < 4; i++) {
+        const mx = i < 2 ? w / 2 + (i === 0 ? -fw * 2 : fw * 2) : fw * 0.5 * (i === 2 ? 1 : -1) + (i === 2 ? 0 : w);
+        const my = i < 2 ? (i === 0 ? fw * 0.3 : h - fw * 0.3) : h / 2;
+        ctx.fillStyle = colors[(i * 2) % colors.length];
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(mx, my, circleR * 0.45, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.globalAlpha = 1;
       break;
     }
 
     case 'flowers': {
-      const sz = fw * 2.8;
-      const petalColors = ['#ff69b4', '#ff4444', '#aa44ff', '#ff8800', '#4488ff'];
+      const sz = fw * 4.5;
+      const petalColors = ['#ff69b4', '#ff4444', '#aa44ff', '#ff8800', '#4488ff', '#44dd44'];
       const centerColors = ['#ffdd00', '#ffd700', '#ffaa00'];
-      // Large flowers at corners
-      drawFlower(ctx, fw * 1.5, fw * 1.5, sz, petalColors[0], centerColors[0]);
-      drawFlower(ctx, w - fw * 1.5, fw * 1.5, sz * 0.85, petalColors[1], centerColors[1]);
-      drawFlower(ctx, fw * 1.8, h - fw * 1.3, sz * 0.8, petalColors[2], centerColors[2]);
-      drawFlower(ctx, w - fw * 1.8, h - fw * 1.3, sz * 0.85, petalColors[3], centerColors[0]);
-      // Small flowers at mid-edges
-      drawFlower(ctx, w / 2, fw * 0.4, sz * 0.5, petalColors[4], centerColors[1]);
-      drawFlower(ctx, w / 2, h - fw * 0.4, sz * 0.45, petalColors[0], centerColors[2]);
-      drawFlower(ctx, fw * 0.4, h / 2, sz * 0.45, petalColors[1], centerColors[0]);
-      drawFlower(ctx, w - fw * 0.4, h / 2, sz * 0.45, petalColors[2], centerColors[1]);
-      // Leaf accents
+      // BIG flowers at corners
+      drawFlower(ctx, fw * 2.0, fw * 2.0, sz, petalColors[0], centerColors[0]);
+      drawFlower(ctx, w - fw * 2.0, fw * 2.0, sz * 0.9, petalColors[1], centerColors[1]);
+      drawFlower(ctx, fw * 2.2, h - fw * 1.8, sz * 0.85, petalColors[2], centerColors[2]);
+      drawFlower(ctx, w - fw * 2.2, h - fw * 1.8, sz * 0.9, petalColors[3], centerColors[0]);
+      // Medium flowers at mid-edges
+      drawFlower(ctx, w * 0.3, fw * 0.4, sz * 0.5, petalColors[4], centerColors[1]);
+      drawFlower(ctx, w * 0.7, fw * 0.4, sz * 0.45, petalColors[5], centerColors[2]);
+      drawFlower(ctx, w / 2, h - fw * 0.4, sz * 0.5, petalColors[0], centerColors[0]);
+      drawFlower(ctx, fw * 0.4, h * 0.35, sz * 0.45, petalColors[1], centerColors[1]);
+      drawFlower(ctx, fw * 0.4, h * 0.65, sz * 0.4, petalColors[3], centerColors[2]);
+      drawFlower(ctx, w - fw * 0.4, h * 0.35, sz * 0.45, petalColors[2], centerColors[0]);
+      drawFlower(ctx, w - fw * 0.4, h * 0.65, sz * 0.4, petalColors[4], centerColors[1]);
+      // Leaf accents - bigger
       ctx.fillStyle = '#2d8a4e';
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 18; i++) {
         const lx = fw * 0.5 + ((i * 1733 + 11) % (w - fw));
         const ly = fw * 0.5 + ((i * 2311 + 7) % (h - fw));
         ctx.save();
         ctx.translate(lx, ly); ctx.rotate((i * 0.9) % (Math.PI * 2));
-        ctx.beginPath(); ctx.ellipse(0, 0, fw * 0.12, fw * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 0, fw * 0.18, fw * 0.5, 0, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
       break;
@@ -910,11 +951,11 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                 <div
                   style={{
                     position: 'absolute',
-                    bottom: '-44px',
+                    bottom: '-60px',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     display: 'flex',
-                    gap: '6px',
+                    gap: '18px',
                     zIndex: 10,
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
@@ -922,9 +963,9 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                 >
                   <button
                     style={{
-                      width: '36px', height: '36px', borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)',
-                      color: '#fff', fontSize: '1.3rem', cursor: 'pointer',
+                      width: '48px', height: '48px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.75)', border: '2px solid rgba(255,255,255,0.4)',
+                      color: '#fff', fontSize: '1.5rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       backdropFilter: 'blur(8px)',
                     }}
@@ -932,9 +973,9 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                   >−</button>
                   <button
                     style={{
-                      width: '36px', height: '36px', borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)',
-                      color: '#fff', fontSize: '1.3rem', cursor: 'pointer',
+                      width: '48px', height: '48px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.75)', border: '2px solid rgba(255,255,255,0.4)',
+                      color: '#fff', fontSize: '1.5rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       backdropFilter: 'blur(8px)',
                     }}
@@ -942,9 +983,9 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
                   >+</button>
                   <button
                     style={{
-                      width: '36px', height: '36px', borderRadius: '50%',
-                      background: 'rgba(231,76,60,0.85)', border: 'none',
-                      color: '#fff', fontSize: '1rem', cursor: 'pointer',
+                      width: '48px', height: '48px', borderRadius: '50%',
+                      background: 'rgba(231,76,60,0.9)', border: '2px solid rgba(255,255,255,0.3)',
+                      color: '#fff', fontSize: '1.2rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                     onClick={(e) => { e.stopPropagation(); removeSticker(i); }}
