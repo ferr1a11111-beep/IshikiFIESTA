@@ -1,0 +1,64 @@
+================================================================
+         IshikiFIESTA v3.0 - GUIA RAPIDA (1 hoja)
+         Photo Booth Profesional para Totem Touch
+================================================================
+
+INSTALACION (desde pen drive)
+----------------------------------------------------------------
+1. Conectar el pen drive al totem
+2. Click derecho en INSTALAR.bat > Ejecutar como administrador
+3. Seguir las instrucciones (S/N)
+   - Se instala en C:\IshikiFIESTA
+   - Crea acceso directo en el escritorio
+   - Opcion de inicio automatico con Windows
+
+COMO EJECUTAR
+----------------------------------------------------------------
+- Doble click en el acceso directo "IshikiFIESTA" del escritorio
+- O ejecutar C:\IshikiFIESTA\IshikiFIESTA.exe
+- La app se abre en pantalla completa (modo kiosko)
+
+CONFIGURACION BASICA (nombre del cumpleanero, etc.)
+----------------------------------------------------------------
+1. Con la app abierta, tocar 5 VECES RAPIDO la esquina
+   SUPERIOR DERECHA de la pantalla
+2. Se abre el Panel de Administracion
+3. Configurar:
+   - Nombre del evento (ej: "Cumple de Mati", "Boda Ana y Juan")
+   - Fecha del evento
+   - Seleccionar impresora de fotos (Epson u otra)
+   - Seleccionar impresora termica (frases divertidas)
+   - Activar/desactivar funciones segun necesidad
+4. Los cambios se guardan automaticamente
+
+FUNCIONES DEL PROYECTO
+----------------------------------------------------------------
+ 1. MODO FOTO         Foto individual con cuenta regresiva
+ 2. MODO TIRA         Tira de 3 fotos estilo fotomatón
+ 3. MODO GIF          GIF animado de 8 cuadros
+ 4. MODO BOOMERANG    Video ida y vuelta (6 cuadros)
+ 5. 12 FILTROS        B&N, Sepia, Vintage, Pop, Neon, Warm,
+                      Cool, Drama, Retro, Cinema, Sunset, Noir
+ 6. MARCOS            8 estilos de marcos de colores
+ 7. STICKERS          24 stickers divertidos (sombreros, lentes,
+                      bigotes, coronas, etc.) con drag & drop
+ 8. IMPRESION FOTOS   Imprime en impresora de fotos (Epson/otra)
+ 9. FRASES DIVERTIDAS Imprime frase random en impresora termica
+                      con nombre del evento y decoracion
+10. QR PARA CELULAR   Los invitados escanean QR y descargan la
+                      foto directo al celular via WiFi local
+11. GALERIA           Grid con todas las fotos del evento,
+                      re-imprimir o compartir por QR
+12. PANTALLA IDLE     Pantalla de espera animada, vuelve sola
+                      despues de 30 seg sin actividad
+13. PANEL ADMIN       Configuracion completa del evento,
+                      estadisticas, gestion de impresoras
+14. MODO KIOSKO       Pantalla completa sin escapar (Alt+F4, etc)
+15. 100% OFFLINE      Funciona sin internet en la fiesta
+
+DATOS DEL EVENTO
+----------------------------------------------------------------
+- Fotos guardadas en: C:\IshikiFIESTA\IshikiFIESTA_Data\gallery\
+- Config guardada en: C:\IshikiFIESTA\IshikiFIESTA_Data\config\
+
+================================================================
