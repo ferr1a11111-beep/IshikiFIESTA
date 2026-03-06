@@ -276,8 +276,8 @@ export default function EditorScreen({ config, image, frames: capturedFrames, mo
         <div className="editor-tabs">
           {[
             { id: 'filters', label: '🎨 Filtros' },
-            { id: 'frames', label: '🖼️ Marcos' },
-            ...(config.enableStickers ? [{ id: 'stickers', label: '⭐ Stickers' }] : []),
+            ...(config.enableFrames !== false ? [{ id: 'frames', label: '🖼️ Marcos' }] : []),
+            ...(config.enableStickers !== false ? [{ id: 'stickers', label: '⭐ Stickers' }] : []),
           ].map(tab => (
             <button
               key={tab.id}

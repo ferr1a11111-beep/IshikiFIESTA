@@ -431,9 +431,10 @@ html, body, #root {
 }
 
 .editor-sidebar {
-  width: 320px;
-  background: rgba(15, 15, 30, 0.95);
-  border-left: 1px solid var(--glass-border);
+  width: 380px;
+  min-width: 380px;
+  background: rgba(20, 20, 40, 0.98);
+  border-left: 2px solid var(--primary);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -441,33 +442,39 @@ html, body, #root {
 
 .editor-tabs {
   display: flex;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .editor-tab {
   flex: 1;
-  padding: 16px;
+  padding: 20px 16px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
   background: transparent;
   border: none;
   cursor: pointer;
   transition: var(--transition);
-  border-bottom: 3px solid transparent;
+  border-bottom: 4px solid transparent;
 }
 
 .editor-tab.active {
-  color: var(--primary);
+  color: #fff;
+  background: rgba(247, 151, 30, 0.15);
   border-bottom-color: var(--primary);
+}
+
+.editor-tab:active {
+  background: rgba(247, 151, 30, 0.25);
 }
 
 .editor-panel {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -482,14 +489,14 @@ html, body, #root {
 .filter-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .filter-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   padding: 8px;
   border-radius: var(--radius-sm);
@@ -507,17 +514,23 @@ html, body, #root {
 }
 
 .filter-thumb {
-  width: 72px;
-  height: 72px;
-  border-radius: 10px;
+  width: 85px;
+  height: 85px;
+  border-radius: 12px;
   object-fit: cover;
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-item.active .filter-thumb {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(247, 151, 30, 0.4);
 }
 
 .filter-name {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
 }
 
@@ -529,7 +542,7 @@ html, body, #root {
 .sticker-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .sticker-item {
@@ -537,7 +550,9 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--glass);
   border-radius: var(--radius-sm);
   cursor: pointer;
