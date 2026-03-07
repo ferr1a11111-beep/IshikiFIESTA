@@ -339,29 +339,103 @@ export default function AdminScreen({ config, onSave, onClose }) {
         </div>
 
         {/* Camera */}
-        {cameras.length > 1 && (
-          <div className="admin-section">
-            <div className="admin-section-title">📷 Camara</div>
-            <div className="admin-field">
-              <div>
-                <div className="admin-field-label">Seleccionar camara</div>
-                <div className="admin-field-desc">
-                  Si las fotos salen en negro, cambia a otra camara
-                </div>
+        <div className="admin-section">
+          <div className="admin-section-title">📷 Camara</div>
+          <div className="admin-field">
+            <div>
+              <div className="admin-field-label">Seleccionar camara</div>
+              <div className="admin-field-desc">
+                Si las fotos salen en negro o infrarrojo, cambia a otra camara
               </div>
-              <select
-                className="admin-input"
-                value={draft.cameraDeviceId || ''}
-                onChange={(e) => update('cameraDeviceId', e.target.value)}
-              >
-                <option value="">Automatica</option>
-                {cameras.map(c => (
-                  <option key={c.deviceId} value={c.deviceId}>{c.label}</option>
-                ))}
-              </select>
+            </div>
+            <select
+              className="admin-input"
+              value={draft.cameraDeviceId || ''}
+              onChange={(e) => update('cameraDeviceId', e.target.value)}
+            >
+              <option value="">Automatica (evita IR)</option>
+              {cameras.map(c => (
+                <option key={c.deviceId} value={c.deviceId}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          {cameras.length === 0 && (
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '8px 0' }}>
+              Abriendo camara para detectar dispositivos...
+            </div>
+          )}
+        </div>
+
+        {/* Mode settings */}
+        <div className="admin-section">
+          <div className="admin-section-title">🔢 Cantidad de Capturas</div>
+
+          <div className="admin-field">
+            <div>
+              <div className="admin-field-label">Fotos en tira (Strip)</div>
+              <div className="admin-field-desc">Cuantas fotos se toman en el modo Tira</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('stripPhotos', Math.max(2, (draft.stripPhotos || 3) - 1))}
+              >−</button>
+              <span style={{ fontSize: '1.3rem', fontWeight: 700, minWidth: '30px', textAlign: 'center' }}>
+                {draft.stripPhotos || 3}
+              </span>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('stripPhotos', Math.min(6, (draft.stripPhotos || 3) + 1))}
+              >+</button>
             </div>
           </div>
-        )}
+
+          <div className="admin-field">
+            <div>
+              <div className="admin-field-label">Frames en GIF</div>
+              <div className="admin-field-desc">Cuantos cuadros captura rapido el modo GIF</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('gifFrames', Math.max(4, (draft.gifFrames || 8) - 1))}
+              >−</button>
+              <span style={{ fontSize: '1.3rem', fontWeight: 700, minWidth: '30px', textAlign: 'center' }}>
+                {draft.gifFrames || 8}
+              </span>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('gifFrames', Math.min(12, (draft.gifFrames || 8) + 1))}
+              >+</button>
+            </div>
+          </div>
+
+          <div className="admin-field">
+            <div>
+              <div className="admin-field-label">Frames en Boomerang</div>
+              <div className="admin-field-desc">Cuantos cuadros captura rapido el modo Loop</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('boomerangFrames', Math.max(4, (draft.boomerangFrames || 6) - 1))}
+              >−</button>
+              <span style={{ fontSize: '1.3rem', fontWeight: 700, minWidth: '30px', textAlign: 'center' }}>
+                {draft.boomerangFrames || 6}
+              </span>
+              <button
+                className="touch-btn touch-btn-glass touch-btn-icon"
+                style={{ minWidth: '44px', minHeight: '44px', fontSize: '1.4rem' }}
+                onClick={() => update('boomerangFrames', Math.min(12, (draft.boomerangFrames || 6) + 1))}
+              >+</button>
+            </div>
+          </div>
+        </div>
 
         {/* Printing */}
         <div className="admin-section">
