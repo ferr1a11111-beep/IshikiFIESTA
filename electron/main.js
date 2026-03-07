@@ -66,6 +66,7 @@ function loadConfig() {
     thermalPrinterName: '',
     photoPrinterName: '',
     theme: 'fiesta',
+    cameraDeviceId: '',
     customPhrases: [],
     idleWallpaper: '',
   };
@@ -171,11 +172,21 @@ function setupIPC() {
     }
   });
   ipcMain.handle('app:quit', () => {
+    console.log('[IshikiFIESTA] Quit requested - forcing close...');
     if (shareServer) shareServer.stop();
-    app.quit();
+    if (mainWindow) {
+      mainWindow.setKiosk(false);
+      mainWindow.setFullScreen(false);
+      mainWindow.close();
+      mainWindow.destroy();
+    }
+    app.exit(0); // Force exit (stronger than app.quit())
   });
   ipcMain.handle('app:getAssetsPath', () => ASSETS_DIR);
   ipcMain.handle('app:getGalleryPath', () => GALLERY_DIR);
+
+  // Camera: list available cameras (triggered from renderer via mediaDevices)
+  // Config already supports cameraDeviceId field
 }
 
 // Create desktop shortcut to gallery folder

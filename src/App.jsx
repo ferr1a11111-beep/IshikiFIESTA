@@ -57,6 +57,7 @@ export default function App() {
           boomerangFrames: 6,
           thermalPrinterName: '',
           photoPrinterName: '',
+          cameraDeviceId: '',
           theme: 'fiesta',
           customPhrases: [],
           idleWallpaper: '',

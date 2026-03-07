@@ -11,7 +11,7 @@ const MODE_LABELS = {
 };
 
 export default function CameraScreen({ config, mode, onCapture, onBack }) {
-  const { videoRef, isReady, error, start, stop, captureFrame } = useCamera();
+  const { videoRef, isReady, error, start, stop, captureFrame } = useCamera(config);
   const { count, isCounting, isFlashing, startCountdown, cancel } = useCountdown(config.countdownSeconds || 3);
   const [stripFrames, setStripFrames] = useState([]);
   const [capturing, setCapturing] = useState(false);

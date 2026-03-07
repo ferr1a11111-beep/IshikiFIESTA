@@ -13,6 +13,7 @@ function Toggle({ value, onChange }) {
 export default function AdminScreen({ config, onSave, onClose }) {
   const [draft, setDraft] = useState({ ...config });
   const [printers, setPrinters] = useState([]);
+  const [cameras, setCameras] = useState([]);
   const [stats, setStats] = useState(null);
   const [newPhrase, setNewPhrase] = useState('');
   const [customPhrases, setCustomPhrases] = useState(config.customPhrases || []);
@@ -51,6 +52,20 @@ export default function AdminScreen({ config, onSave, onClose }) {
         setWallpaperPhotos(photos.filter(p => p.mode === 'photo' || p.mode === 'strip'));
       } catch (e) {
         console.error('Admin load error:', e);
+      }
+
+      // Enumerate cameras
+      try {
+        // Need temporary stream to get labels
+        const tmpStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        tmpStream.getTracks().forEach(t => t.stop());
+        const cams = devices
+          .filter(d => d.kind === 'videoinput')
+          .map(d => ({ deviceId: d.deviceId, label: d.label || `Camara ${d.deviceId.substring(0, 6)}` }));
+        setCameras(cams);
+      } catch (e) {
+        console.warn('Could not enumerate cameras:', e);
       }
     };
     load();
@@ -322,6 +337,31 @@ export default function AdminScreen({ config, onSave, onClose }) {
             </div>
           ))}
         </div>
+
+        {/* Camera */}
+        {cameras.length > 1 && (
+          <div className="admin-section">
+            <div className="admin-section-title">📷 Camara</div>
+            <div className="admin-field">
+              <div>
+                <div className="admin-field-label">Seleccionar camara</div>
+                <div className="admin-field-desc">
+                  Si las fotos salen en negro, cambia a otra camara
+                </div>
+              </div>
+              <select
+                className="admin-input"
+                value={draft.cameraDeviceId || ''}
+                onChange={(e) => update('cameraDeviceId', e.target.value)}
+              >
+                <option value="">Automatica</option>
+                {cameras.map(c => (
+                  <option key={c.deviceId} value={c.deviceId}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Printing */}
         <div className="admin-section">
